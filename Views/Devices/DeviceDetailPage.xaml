@@ -1,14 +1,306 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:Venther.App.ViewModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:Venther.App.Controls"
              x:Class="Venther.App.Views.Devices.DeviceDetailPage"
-             x:DataType="vm:DeviceDetailViewModel"
-             Title="Detalhes do Dispositivo">
-    <Grid>
-        <Label Text="Detalhes do Dispositivo"
-               Style="{StaticResource Heading}"
-               HorizontalOptions="Center"
-               VerticalOptions="Center" />
+             Title="Detalhes do Equipamento">
+
+    <Grid RowDefinitions="64,*">
+
+        <!-- ===== Header: voltar + título + avatar ===== -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8"
+              Padding="24,0" BackgroundColor="{StaticResource Background}">
+            <ImageButton Source="chevron_left.svg" WidthRequest="44" HeightRequest="44"
+                         Padding="14" BackgroundColor="Transparent"
+                         Command="{Binding BackCommand}"
+                         SemanticProperties.Description="Voltar">
+                <ImageButton.Behaviors>
+                    <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurface}" />
+                </ImageButton.Behaviors>
+            </ImageButton>
+            <Label Grid.Column="1" Text="{Binding Title}" Style="{StaticResource Heading}"
+                   VerticalOptions="Center" LineBreakMode="TailTruncation" />
+            <Border Grid.Column="2" WidthRequest="32" HeightRequest="32" StrokeThickness="0"
+                    BackgroundColor="{StaticResource Primary}" VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Image Source="user.svg" WidthRequest="12" HeightRequest="12">
+                    <Image.Behaviors>
+                        <toolkit:IconTintColorBehavior TintColor="White" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="24,0,24,40" Spacing="24">
+
+                <!-- ===== Banner: status + ações rápidas ===== -->
+                <Border Style="{StaticResource Card}" Padding="24">
+                    <VerticalStackLayout Spacing="16">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6"
+                                         Color="{StaticResource Success}" VerticalOptions="Center">
+                                    <BoxView.Triggers>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding HasAlert}" Value="True">
+                                            <Setter Property="Color" Value="{StaticResource Accent}" />
+                                        </DataTrigger>
+                                    </BoxView.Triggers>
+                                </BoxView>
+                                <Label Text="STATUS OPERACIONAL" Style="{StaticResource Overline}"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+
+                            <Border Grid.Column="1" StrokeThickness="0" Padding="16,4"
+                                    BackgroundColor="{StaticResource SuccessContainer}">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12" />
+                                </Border.StrokeShape>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding HasAlert}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource AccentContainer}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <HorizontalStackLayout Spacing="4">
+                                    <Image Source="circle_check.svg" WidthRequest="12" HeightRequest="12"
+                                           VerticalOptions="Center">
+                                        <Image.Behaviors>
+                                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSuccessContainer}" />
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="{Binding StatusLabel}" Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource OnSuccessContainer}" VerticalOptions="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding HasAlert}" Value="True">
+                                                <Setter Property="TextColor" Value="{StaticResource OnAccentContainer}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </HorizontalStackLayout>
+                            </Border>
+                        </Grid>
+
+                        <VerticalStackLayout Spacing="8">
+                            <!-- Botão laranja -->
+                            <Border StrokeThickness="0" Padding="24,16"
+                                    BackgroundColor="{StaticResource Accent}">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8" />
+                                </Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding RequestMaintenanceCommand}" />
+                                </Border.GestureRecognizers>
+                                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                                    <Image Source="wrench.svg" WidthRequest="15" HeightRequest="15" VerticalOptions="Center">
+                                        <Image.Behaviors>
+                                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnAccent}" />
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Solicitar Manutenção Preventiva" FontFamily="InterMedium"
+                                           FontSize="14" TextColor="{StaticResource OnAccent}" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                            </Border>
+                            <!-- Botão secundário -->
+                            <Border StrokeThickness="0" Padding="24,16"
+                                    BackgroundColor="{StaticResource Background}">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8" />
+                                </Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding DownloadReportCommand}" />
+                                </Border.GestureRecognizers>
+                                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                                    <Image Source="download.svg" WidthRequest="13" HeightRequest="13" VerticalOptions="Center">
+                                        <Image.Behaviors>
+                                            <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Baixar Relatório PMOC (PDF)" FontFamily="InterMedium"
+                                           FontSize="14" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ===== Abas: Telemetria Real | Histórico ===== -->
+                <Border StrokeThickness="0" Padding="4" BackgroundColor="{StaticResource SurfaceVariant}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8" />
+                    </Border.StrokeShape>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="4">
+                        <Border Grid.Column="0" StrokeThickness="0" Padding="16,12" BackgroundColor="Transparent">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="4" />
+                            </Border.StrokeShape>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsRealtimeTab}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Background}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectTabCommand}" CommandParameter="realtime" />
+                            </Border.GestureRecognizers>
+                            <Label Text="Telemetria Real" Style="{StaticResource Caption}"
+                                   HorizontalTextAlignment="Center" TextColor="{StaticResource OnSurfaceVariant}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsRealtimeTab}" Value="True">
+                                        <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </Border>
+                        <Border Grid.Column="1" StrokeThickness="0" Padding="16,12" BackgroundColor="Transparent">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="4" />
+                            </Border.StrokeShape>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsHistoryTab}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Background}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectTabCommand}" CommandParameter="history" />
+                            </Border.GestureRecognizers>
+                            <Label Text="Histórico" Style="{StaticResource Caption}"
+                                   HorizontalTextAlignment="Center" TextColor="{StaticResource OnSurfaceVariant}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsHistoryTab}" Value="True">
+                                        <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ===== Aba: Telemetria Real ===== -->
+                <VerticalStackLayout Spacing="24" IsVisible="{Binding IsRealtimeTab}">
+
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
+                        <controls:MetricCard Grid.Row="0" Grid.Column="0" Title="Temp Insuflamento"
+                            Value="{Binding Supply.Value}" Unit="{Binding Supply.Unit}"
+                            Caption="{Binding Supply.Caption}" IsAlert="{Binding Supply.IsAlert}"
+                            IconSource="snowflake.svg" TrendIconSource="trending_down.svg" />
+                        <controls:MetricCard Grid.Row="0" Grid.Column="1" Title="Temp Retorno"
+                            Value="{Binding ReturnTemp.Value}" Unit="{Binding ReturnTemp.Unit}"
+                            Caption="{Binding ReturnTemp.Caption}" IsAlert="{Binding ReturnTemp.IsAlert}"
+                            IconSource="thermometer.svg" TrendIconSource="minus.svg" />
+                        <controls:MetricCard Grid.Row="1" Grid.Column="0" Title="Pressão Gás"
+                            Value="{Binding Gas.Value}" Unit="{Binding Gas.Unit}"
+                            Caption="{Binding Gas.Caption}" IsAlert="{Binding Gas.IsAlert}"
+                            IconSource="gauge.svg" TrendIconSource="arrow_right.svg" />
+                        <controls:MetricCard Grid.Row="1" Grid.Column="1" Title="Delta P Evap."
+                            Value="{Binding DeltaP.Value}" Unit="{Binding DeltaP.Unit}"
+                            Caption="{Binding DeltaP.Caption}" IsAlert="{Binding DeltaP.IsAlert}"
+                            IconSource="chevrons_up_down.svg" TrendIconSource="check.svg" />
+                    </Grid>
+
+                    <!-- Card do gráfico -->
+                    <Border Style="{StaticResource Card}" Padding="24">
+                        <VerticalStackLayout Spacing="16">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <VerticalStackLayout>
+                                    <Label Text="Tendência Térmica" Style="{StaticResource Heading}" />
+                                    <Label Text="Monitoramento contínuo (°C)" Style="{StaticResource BodySmall}" />
+                                </VerticalStackLayout>
+
+                                <!-- Filtros 1h / 12h / 24h -->
+                                <Border Grid.Column="1" StrokeThickness="0" Padding="4"
+                                        BackgroundColor="{StaticResource Background}" VerticalOptions="Start">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="4" />
+                                    </Border.StrokeShape>
+                                    <HorizontalStackLayout Spacing="4">
+                                        <Border StrokeThickness="0" Padding="8,4" BackgroundColor="Transparent">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="2" />
+                                            </Border.StrokeShape>
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsPeriod1h}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                                </DataTrigger>
+                                            </Border.Triggers>
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding SelectPeriodCommand}" CommandParameter="1h" />
+                                            </Border.GestureRecognizers>
+                                            <Label Text="1h" Style="{StaticResource Overline}" TextTransform="None"
+                                                   TextColor="{StaticResource OnSurfaceVariant}">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsPeriod1h}" Value="True">
+                                                        <Setter Property="TextColor" Value="White" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Border>
+                                        <Border StrokeThickness="0" Padding="8,4" BackgroundColor="Transparent">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="2" />
+                                            </Border.StrokeShape>
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsPeriod12h}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                                </DataTrigger>
+                                            </Border.Triggers>
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding SelectPeriodCommand}" CommandParameter="12h" />
+                                            </Border.GestureRecognizers>
+                                            <Label Text="12h" Style="{StaticResource Overline}" TextTransform="None"
+                                                   TextColor="{StaticResource OnSurfaceVariant}">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsPeriod12h}" Value="True">
+                                                        <Setter Property="TextColor" Value="White" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Border>
+                                        <Border StrokeThickness="0" Padding="8,4" BackgroundColor="Transparent">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="2" />
+                                            </Border.StrokeShape>
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsPeriod24h}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                                </DataTrigger>
+                                            </Border.Triggers>
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding SelectPeriodCommand}" CommandParameter="24h" />
+                                            </Border.GestureRecognizers>
+                                            <Label Text="24h" Style="{StaticResource Overline}" TextTransform="None"
+                                                   TextColor="{StaticResource OnSurfaceVariant}">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsPeriod24h}" Value="True">
+                                                        <Setter Property="TextColor" Value="White" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Border>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </Grid>
+
+                            <GraphicsView x:Name="TrendChart" HeightRequest="192" />
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding TrendStartLabel}" Style="{StaticResource Overline}"
+                                       TextTransform="None" />
+                                <Label Grid.Column="1" Text="{Binding NowLabel}" Style="{StaticResource Overline}"
+                                       TextTransform="None" TextColor="{StaticResource Primary}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- ===== Aba: Histórico (placeholder) ===== -->
+                <Border Style="{StaticResource Card}" IsVisible="{Binding IsHistoryTab}">
+                    <Label Text="O histórico de leituras estará disponível em breve."
+                           Style="{StaticResource BodySmall}" HorizontalTextAlignment="Center" />
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
     </Grid>
 </ContentPage>

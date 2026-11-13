@@ -76,4 +76,23 @@ public class MockDeviceService : IDeviceService
         device.Status = status;
         return Task.FromResult(true);
     }
+
+    public Task<DeviceTelemetry> GetTelemetryAsync(string deviceId) =>
+    Task.FromResult(new DeviceTelemetry(
+        Supply: new(12.4, "Estável", false),
+        Return: new(22.8, "Ideal", false),
+        GasPressure: new(4.2, "Normal", false),
+        EvaporatorDeltaP: new(180, "Limpo", false),
+        OperationalPercent: 100));
+
+    public Task<IReadOnlyList<double>> GetTemperatureTrendAsync(string deviceId, TrendPeriod period)
+    {
+        double[] data = period switch
+        {
+            TrendPeriod.OneHour => [12.9, 12.7, 12.6, 12.8, 13.1, 13.3, 13.2, 12.9, 12.5, 12.4, 12.6, 12.9, 12.4],
+            TrendPeriod.TwelveHours => [13.5, 13.2, 12.8, 12.6, 12.9, 13.4, 13.8, 13.5, 13.0, 12.7, 12.5, 12.4],
+            _ => [14.0, 13.6, 13.1, 12.8, 12.5, 12.7, 13.2, 13.9, 14.1, 13.6, 13.0, 12.4]
+        };
+        return Task.FromResult<IReadOnlyList<double>>(data);
+    }
 }
