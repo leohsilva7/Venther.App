@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="Venther.App.Controls.AppHeader"
+             x:Name="HeaderRoot"
+             HeightRequest="64"
+             BackgroundColor="{StaticResource Background}">
+
+    <Grid ColumnDefinitions="*, Auto"
+          Padding="20, 0"
+          VerticalOptions="Center">
+
+        <!-- Left: Logo + App Name OR Screen Title -->
+        <Grid Grid.Column="0" VerticalOptions="Center">
+            <!-- Variant 1: Logo + App Name (when Title is empty) -->
+            <HorizontalStackLayout x:Name="BrandingLayout"
+                                   Spacing="10"
+                                   VerticalOptions="Center">
+                <Border WidthRequest="32"
+                        HeightRequest="32"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="0"
+                        BackgroundColor="{StaticResource Surface}"
+                        VerticalOptions="Center">
+                    <Image Source="logoventher.png"
+                           WidthRequest="20"
+                           HeightRequest="20"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <Label Text="VENTHER"
+                       FontFamily="InterBold"
+                       FontSize="18"
+                       CharacterSpacing="1"
+                       TextColor="{StaticResource LogoBlue}"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <!-- Variant 2: Title (when Title is provided) -->
+            <Label x:Name="TitleLabel"
+                   Text="{Binding Title, Source={x:Reference HeaderRoot}}"
+                   FontFamily="InterSemiBold"
+                   FontSize="20"
+                   TextColor="{StaticResource OnSurface}"
+                   VerticalOptions="Center"
+                   IsVisible="False" />
+        </Grid>
+
+        <!-- Right Action Buttons -->
+        <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
+            <!-- Filter Button -->
+            <Border x:Name="FilterButton"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    StrokeShape="RoundRectangle 20"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource Surface}"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    IsVisible="False">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnFilterTapped" />
+                </Border.GestureRecognizers>
+                <Image Source="filter.svg"
+                       WidthRequest="18"
+                       HeightRequest="18"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
+                    <Image.Behaviors>
+                        <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
+
+            <!-- Sync / Refresh Button -->
+            <Border x:Name="SyncButton"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    StrokeShape="RoundRectangle 20"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource Surface}"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    IsVisible="False">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnSyncTapped" />
+                </Border.GestureRecognizers>
+                <Image Source="refresh_cw.svg"
+                       WidthRequest="18"
+                       HeightRequest="18"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
+                    <Image.Behaviors>
+                        <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
+
+            <!-- Bell / Notifications Button -->
+            <Border x:Name="BellButton"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    StrokeShape="RoundRectangle 20"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource Surface}"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBellTapped" />
+                </Border.GestureRecognizers>
+                <Image Source="bell.svg"
+                       WidthRequest="20"
+                       HeightRequest="20"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
+                    <Image.Behaviors>
+                        <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
+
+            <!-- User Avatar -->
+            <Border WidthRequest="40"
+                    HeightRequest="40"
+                    StrokeShape="RoundRectangle 20"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource Outline}"
+                    BackgroundColor="{StaticResource SurfaceVariant}"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center">
+                <Image Source="user.svg"
+                       WidthRequest="20"
+                       HeightRequest="20"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
+                    <Image.Behaviors>
+                        <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
+        </HorizontalStackLayout>
+    </Grid>
+</ContentView>

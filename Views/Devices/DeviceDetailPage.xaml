@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Venther.App.ViewModels"
+             x:Class="Venther.App.Views.Devices.DeviceDetailPage"
+             x:DataType="vm:DeviceDetailViewModel"
+             Title="Detalhes do Dispositivo">
+    <Grid>
+        <Label Text="Detalhes do Dispositivo"
+               Style="{StaticResource Heading}"
+               HorizontalOptions="Center"
+               VerticalOptions="Center" />
+    </Grid>
+</ContentPage>

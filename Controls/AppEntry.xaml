@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Venther.App.Controls.AppEntry"
+             x:Name="This">
+
+    <VerticalStackLayout Spacing="6">
+        <!-- Field Label -->
+        <Label x:Name="FieldLabel"
+               Text="{Binding Label, Source={x:Reference This}}"
+               Style="{StaticResource BodySmall}"
+               FontFamily="InterMedium"
+               TextColor="{StaticResource AuthText}"
+               IsVisible="False" />
+
+        <!-- Input Container -->
+        <Border x:Name="InputBorder"
+                HeightRequest="48"
+                StrokeShape="RoundRectangle 12"
+                StrokeThickness="1"
+                Stroke="{StaticResource AuthBorder}"
+                BackgroundColor="{StaticResource White}"
+                Padding="16, 0">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnBorderTapped" />
+            </Border.GestureRecognizers>
+            <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                <!-- Text Entry -->
+                <Entry x:Name="InnerEntry"
+                       Grid.Column="0"
+                       Text="{Binding Text, Source={x:Reference This}, Mode=TwoWay}"
+                       Placeholder="{Binding Placeholder, Source={x:Reference This}}"
+                       PlaceholderColor="{StaticResource AuthMuted}"
+                       TextColor="{StaticResource AuthText}"
+                       FontFamily="InterRegular"
+                       FontSize="14"
+                       VerticalOptions="Center" />
+
+                <!-- Password Toggle Button -->
+                <Border x:Name="PasswordToggleBorder"
+                        Grid.Column="1"
+                        IsVisible="False"
+                        WidthRequest="36"
+                        HeightRequest="36"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="0"
+                        BackgroundColor="Transparent"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTogglePasswordTapped" />
+                    </Border.GestureRecognizers>
+                    <Grid WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center">
+                        <!-- Eye Open (Hide Password) -->
+                        <Path x:Name="EyeOpenPath"
+                              Aspect="Uniform"
+                              Stroke="{StaticResource AuthMuted}"
+                              StrokeThickness="1.5"
+                              Fill="Transparent"
+                              IsVisible="True"
+                              Data="M 1,10 C 4,4 16,4 19,10 C 16,16 4,16 1,10 Z M 10,7.5 A 2.5,2.5 0 1 1 9.99,7.5 Z" />
+                        <!-- Eye Closed (Show Password) -->
+                        <Path x:Name="EyeClosedPath"
+                              Aspect="Uniform"
+                              Stroke="{StaticResource AuthMuted}"
+                              StrokeThickness="1.5"
+                              Fill="Transparent"
+                              IsVisible="False"
+                              Data="M 1,10 C 4,4 16,4 19,10 C 16,16 4,16 1,10 Z M 10,7.5 A 2.5,2.5 0 1 1 9.99,7.5 Z M 2,2 L 18,18" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Error Message -->
+        <Label x:Name="ErrorLabel"
+               Text="{Binding ErrorMessage, Source={x:Reference This}}"
+               Style="{StaticResource Caption}"
+               TextColor="{StaticResource Error}"
+               IsVisible="False" />
+    </VerticalStackLayout>
+</ContentView>

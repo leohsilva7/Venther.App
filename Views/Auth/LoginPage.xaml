@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Venther.App.ViewModels"
+             xmlns:controls="clr-namespace:Venther.App.Controls"
+             x:Class="Venther.App.Views.Auth.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             Title="Login">
+
+    <ScrollView>
+        <Grid RowDefinitions="*, Auto, *"
+              Padding="24, 32"
+              MinimumHeightRequest="600">
+
+            <VerticalStackLayout Grid.Row="1"
+                                 Spacing="24"
+                                 MaximumWidthRequest="420"
+                                 HorizontalOptions="Fill">
+
+                <!-- Logo & Branding Header -->
+                <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                    <Border WidthRequest="64"
+                            HeightRequest="64"
+                            StrokeShape="RoundRectangle 16"
+                            StrokeThickness="0"
+                            BackgroundColor="{StaticResource Surface}"
+                            HorizontalOptions="Center"
+                            Margin="0, 0, 0, 8">
+                        <Image Source="logoventher.png"
+                               WidthRequest="36"
+                               HeightRequest="36"
+                               Aspect="AspectFit"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
+
+                    <Label Text="VENTHER"
+                           FontFamily="InterBold"
+                           FontSize="20"
+                           CharacterSpacing="1.2"
+                           TextColor="{StaticResource LogoBlue}"
+                           HorizontalOptions="Center" />
+
+                    <Label Text="Acesse sua conta"
+                           Style="{StaticResource TitleAuth}"
+                           HorizontalOptions="Center"
+                           Margin="0, 4, 0, 0" />
+
+                    <Label Text="Insira suas credenciais para gerenciar seus sistemas"
+                           Style="{StaticResource BodySmall}"
+                           TextColor="{StaticResource AuthMuted}"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Credential Error Banner (ErrorBg / ErrorBorder / Error) -->
+                <Border IsVisible="{Binding HasCredentialError}"
+                        BackgroundColor="{StaticResource ErrorBg}"
+                        Stroke="{StaticResource ErrorBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="16, 12">
+                    <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
+                        <!-- Alert Icon -->
+                        <Path Grid.Column="0"
+                              VerticalOptions="Center"
+                              Fill="{StaticResource Error}"
+                              Aspect="Uniform"
+                              WidthRequest="18"
+                              HeightRequest="18"
+                              Data="M 10,1 L 19,17 L 1,17 Z M 9,6 L 11,6 L 11,11 L 9,11 Z M 9,13 L 11,13 L 11,15 L 9,15 Z" />
+
+                        <!-- Error Message Text -->
+                        <Label Grid.Column="1"
+                               Text="{Binding CredentialErrorMessage}"
+                               Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Error}"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Auth Card -->
+                <Border Style="{StaticResource AuthCard}">
+                    <VerticalStackLayout Spacing="20">
+                        <!-- Email Field -->
+                        <controls:AppEntry Label="E-mail"
+                                           Placeholder="nome@empresa.com"
+                                           Keyboard="Email"
+                                           ReturnType="Next"
+                                           Text="{Binding Email}"
+                                           HasError="{Binding HasEmailError}"
+                                           ErrorMessage="{Binding EmailErrorMessage}" />
+
+                        <!-- Password Field -->
+                        <controls:AppEntry Label="Senha"
+                                           Placeholder="••••••••"
+                                           IsPassword="True"
+                                           ReturnType="Done"
+                                           Text="{Binding Password}"
+                                           HasError="{Binding HasPasswordError}"
+                                           ErrorMessage="{Binding PasswordErrorMessage}" />
+
+                        <!-- Forgot Password Link -->
+                        <Button Style="{StaticResource LinkButton}"
+                                Text="Esqueci minha senha"
+                                Command="{Binding ForgotPasswordCommand}"
+                                HorizontalOptions="End" />
+
+                        <!-- Submit Button -->
+                        <Button Style="{StaticResource PrimaryButton}"
+                                Text="Entrar"
+                                Command="{Binding EntrarCommand}"
+                                IsEnabled="{Binding IsNotBusy}"
+                                HorizontalOptions="Fill" />
+
+                        <!-- Activity Indicator -->
+                        <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                           IsVisible="{Binding IsBusy}"
+                                           Color="{StaticResource Primary}"
+                                           HeightRequest="24"
+                                           HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Footer Support Note -->
+                <Label Text="Venther • Manutenção Inteligente de Climatização"
+                       Style="{StaticResource Caption}"
+                       TextColor="{StaticResource AuthMuted}"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
+</ContentPage>

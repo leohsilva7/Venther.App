@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Venther.App.Controls.SegmentedControl"
+             x:Name="ThisControl">
+
+    <Border StrokeShape="RoundRectangle 12"
+            StrokeThickness="1"
+            Stroke="{StaticResource AuthBorder}"
+            BackgroundColor="{StaticResource SurfaceVariant}"
+            Padding="4"
+            HeightRequest="44">
+        <Grid x:Name="SegmentsGrid"
+              VerticalOptions="Fill"
+              HorizontalOptions="Fill" />
+    </Border>
+</ContentView>
