@@ -1,14 +1,159 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Venther.App.Controls"
              xmlns:vm="clr-namespace:Venther.App.ViewModels"
              x:Class="Venther.App.Views.Devices.RegisterDevicePage"
              x:DataType="vm:RegisterDeviceViewModel"
-             Title="Cadastrar Dispositivo">
-    <Grid>
-        <Label Text="Cadastrar Dispositivo"
-               Style="{StaticResource Heading}"
-               HorizontalOptions="Center"
-               VerticalOptions="Center" />
+             BackgroundColor="{StaticResource BackgroundPrimary}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="20,16,20,24" RowSpacing="20">
+
+        <!-- Cabeçalho + Barra de Progresso -->
+        <VerticalStackLayout Grid.Row="0" Spacing="20">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Border Grid.Column="0"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        Stroke="{StaticResource BorderDefault}"
+                        StrokeThickness="1"
+                        BackgroundColor="{StaticResource BackgroundCard}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10" />
+                    </Border.StrokeShape>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoBackCommand}" />
+                    </Border.GestureRecognizers>
+                    <Image Source="icon_arrow_left.png"
+                           WidthRequest="20"
+                           HeightRequest="20"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                    <Label Text="Cadastrar Dispositivo"
+                           FontFamily="PlusJakartaSansBold"
+                           FontSize="20"
+                           TextColor="{StaticResource TextPrimary}" />
+                    <Label Text="Identifique o cliente e o local de instalação"
+                           FontFamily="InterRegular"
+                           FontSize="13"
+                           TextColor="{StaticResource TextSecondary}" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Controlo StepProgress -->
+            <controls:StepProgress CurrentStep="1" TotalSteps="3" />
+        </VerticalStackLayout>
+
+        <!-- Formulário Principal -->
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Spacing="20">
+
+                <!-- Card de Dados de Identificação -->
+                <Border BackgroundColor="{StaticResource BackgroundCard}"
+                        Stroke="{StaticResource BorderDefault}"
+                        StrokeThickness="1"
+                        Padding="16">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="20">
+
+                        <!-- Campo 1: Atribuir Cliente -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Atribuir Cliente"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="14"
+                                   TextColor="{StaticResource TextPrimary}" />
+
+                            <controls:AppEntry Placeholder="Buscar ou digitar nome do cliente..."
+                                               Text="{Binding ClientName, Mode=TwoWay}"
+                                               LeadingIconSource="icon_search.png"
+                                               ReturnType="Next" />
+
+                            <!-- Chips de Sugestão -->
+                            <FlexLayout BindableLayout.ItemsSource="{Binding SuggestedClients}"
+                                        Wrap="Wrap"
+                                        Direction="Row"
+                                        JustifyContent="Start"
+                                        AlignItems="Center"
+                                        Margin="0,4,0,0">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Border BackgroundColor="{StaticResource BackgroundPrimary}"
+                                                Stroke="{StaticResource BorderDefault}"
+                                                StrokeThickness="1"
+                                                Padding="12,6"
+                                                Margin="0,0,8,8">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="16" />
+                                            </Border.StrokeShape>
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:RegisterDeviceViewModel}}, Path=SelectClientCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Border.GestureRecognizers>
+                                            <Label Text="{Binding .}"
+                                                   FontFamily="InterMedium"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource TextSecondary}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
+                        </VerticalStackLayout>
+
+                        <!-- Divisor sutil -->
+                        <BoxView HeightRequest="1" Color="{StaticResource BorderDefault}" />
+
+                        <!-- Campo 2: Local de Instalação / Apelido -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Local de Instalação / Apelido"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="14"
+                                   TextColor="{StaticResource TextPrimary}" />
+
+                            <controls:AppEntry Placeholder="Ex: Chiller 04 - Cobertura"
+                                               Text="{Binding InstallationLocation, Mode=TwoWay}"
+                                               ReturnType="Done" />
+
+                            <Label Text="Este nome ajudará a identificar rapidamente o equipamento nos alertas e relatórios."
+                                   FontFamily="InterRegular"
+                                   FontSize="12"
+                                   TextColor="{StaticResource TextTertiary}" />
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Botão Avançar (Desabilitado até ambos os campos estarem preenchidos) -->
+        <Button Grid.Row="2"
+                Text="Avançar"
+                Command="{Binding AdvanceCommand}"
+                IsEnabled="{Binding CanProceed}"
+                HeightRequest="50"
+                CornerRadius="12"
+                FontFamily="InterSemiBold"
+                FontSize="15"
+                TextColor="White">
+            <Button.Triggers>
+                <Trigger TargetType="Button" Property="IsEnabled" Value="True">
+                    <Setter Property="BackgroundColor" Value="{StaticResource BrandPrimary}" />
+                    <Setter Property="Opacity" Value="1.0" />
+                </Trigger>
+                <Trigger TargetType="Button" Property="IsEnabled" Value="False">
+                    <Setter Property="BackgroundColor" Value="#94A3B8" />
+                    <Setter Property="Opacity" Value="0.65" />
+                </Trigger>
+            </Button.Triggers>
+        </Button>
+
     </Grid>
 </ContentPage>
