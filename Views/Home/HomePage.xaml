@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:Venther.App.ViewModels"
+             xmlns:models="clr-namespace:Venther.App.Models"
+             xmlns:controls="clr-namespace:Venther.App.Controls"
+             x:Class="Venther.App.Views.Home.HomePage"
+             x:DataType="vm:HomeViewModel"
+             Title="Início">
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- App Header (64px, Solid Background) -->
+        <controls:AppHeader Grid.Row="0"
+                            BellCommand="{Binding OpenAlertsCommand}" />
+
+        <!-- Main Body Grid: List + FAB Overlay -->
+        <Grid Grid.Row="1">
+            <CollectionView ItemsSource="{Binding FilteredDevices}"
+                            SelectionMode="None">
+
+                <!-- Header: Search Field, Summary Chips, Section Title -->
+                <CollectionView.Header>
+                    <VerticalStackLayout Spacing="16"
+                                         Padding="20, 12, 20, 8">
+
+                        <!-- Search Field -->
+                        <Border HeightRequest="48"
+                                StrokeShape="RoundRectangle 12"
+                                StrokeThickness="1"
+                                Stroke="{StaticResource AuthBorder}"
+                                BackgroundColor="{StaticResource White}"
+                                Padding="16, 0">
+                            <Grid ColumnDefinitions="Auto, *"
+                                  ColumnSpacing="12"
+                                  VerticalOptions="Center">
+                                <Image Grid.Column="0"
+                                       Source="search.svg"
+                                       WidthRequest="18"
+                                       HeightRequest="18"
+                                       Aspect="AspectFit"
+                                       VerticalOptions="Center">
+                                    <Image.Behaviors>
+                                        <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                                    </Image.Behaviors>
+                                </Image>
+
+                                <Entry Grid.Column="1"
+                                       Text="{Binding SearchText, Mode=TwoWay}"
+                                       Placeholder="Buscar equipamento ou local..."
+                                       PlaceholderColor="{StaticResource AuthMuted}"
+                                       TextColor="{StaticResource OnSurface}"
+                                       FontFamily="InterRegular"
+                                       FontSize="14"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Summary Horizontal Chips (Total, Normais, Atenção) -->
+                        <Grid ColumnDefinitions="*, *, *"
+                              ColumnSpacing="10">
+
+                            <!-- Chip 1: Total -->
+                            <Border Grid.Column="0"
+                                    StrokeShape="RoundRectangle 8"
+                                    StrokeThickness="1"
+                                    Stroke="{StaticResource AuthBorder}"
+                                    BackgroundColor="{StaticResource Surface}"
+                                    Padding="10, 8">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectFilterCommand}"
+                                                          CommandParameter="Total" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                    <Label Text="{Binding TotalCount}"
+                                           FontFamily="InterBold"
+                                           FontSize="18"
+                                           TextColor="{StaticResource OnSurface}"
+                                           HorizontalOptions="Center" />
+                                    <Label Text="Total"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource OnSurfaceVariant}"
+                                           HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Chip 2: Normais -->
+                            <Border Grid.Column="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    StrokeThickness="1"
+                                    Stroke="{StaticResource AuthBorder}"
+                                    BackgroundColor="{StaticResource Surface}"
+                                    Padding="10, 8">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectFilterCommand}"
+                                                          CommandParameter="Normal" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                    <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
+                                        <BoxView WidthRequest="6"
+                                                 HeightRequest="6"
+                                                 CornerRadius="3"
+                                                 Color="#16A34A"
+                                                 VerticalOptions="Center" />
+                                        <Label Text="{Binding NormalCount}"
+                                               FontFamily="InterBold"
+                                               FontSize="18"
+                                               TextColor="{StaticResource OnSurface}"
+                                               VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                    <Label Text="Normais"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource OnSurfaceVariant}"
+                                           HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Chip 3: Atenção -->
+                            <Border Grid.Column="2"
+                                    StrokeShape="RoundRectangle 8"
+                                    StrokeThickness="1"
+                                    Stroke="{StaticResource AuthBorder}"
+                                    BackgroundColor="{StaticResource Surface}"
+                                    Padding="10, 8">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectFilterCommand}"
+                                                          CommandParameter="Attention" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                    <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
+                                        <BoxView WidthRequest="6"
+                                                 HeightRequest="6"
+                                                 CornerRadius="3"
+                                                 Color="{StaticResource Accent}"
+                                                 VerticalOptions="Center" />
+                                        <Label Text="{Binding AttentionCount}"
+                                               FontFamily="InterBold"
+                                               FontSize="18"
+                                               TextColor="{StaticResource AccentText}"
+                                               VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                    <Label Text="Atenção"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource AccentText}"
+                                           HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+
+                        <!-- Section Header: Equipamentos Atribuídos -->
+                        <Grid ColumnDefinitions="*, Auto"
+                              Margin="0, 8, 0, 0"
+                              VerticalOptions="Center">
+                            <Label Grid.Column="0"
+                                   Text="Equipamentos Atribuídos"
+                                   Style="{StaticResource Heading}"
+                                   TextColor="{StaticResource OnSurface}"
+                                   VerticalOptions="Center" />
+
+                            <Label Grid.Column="1"
+                                   Text="{Binding FilteredDevices.Count, StringFormat='{0} equipamentos'}"
+                                   Style="{StaticResource Caption}"
+                                   TextColor="{StaticResource OnSurfaceVariant}"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </CollectionView.Header>
+
+                <!-- Item Template: DeviceCard -->
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Device">
+                        <Grid Padding="20, 0, 20, 12">
+                            <controls:DeviceCard Device="{Binding .}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <!-- Empty State -->
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Spacing="12"
+                                         Padding="20, 48"
+                                         HorizontalOptions="Center">
+                        <Border WidthRequest="48"
+                                HeightRequest="48"
+                                StrokeShape="RoundRectangle 24"
+                                StrokeThickness="0"
+                                BackgroundColor="{StaticResource SurfaceVariant}"
+                                HorizontalOptions="Center">
+                            <Image Source="search.svg"
+                                   WidthRequest="22"
+                                   HeightRequest="22"
+                                   Aspect="AspectFit"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                                </Image.Behaviors>
+                            </Image>
+                        </Border>
+
+                        <Label Text="Nenhum equipamento encontrado"
+                               Style="{StaticResource Heading}"
+                               FontSize="16"
+                               HorizontalOptions="Center" />
+
+                        <Label Text="Verifique a digitação ou selecione outro filtro."
+                               Style="{StaticResource BodySmall}"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <!-- Footer spacing so FAB / bottom don't obscure last card -->
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="88" Color="Transparent" />
+                </CollectionView.Footer>
+            </CollectionView>
+
+            <!-- Floating Action Button (FAB) Orange (+) with Shadow -->
+            <Border WidthRequest="56"
+                    HeightRequest="56"
+                    StrokeShape="RoundRectangle 28"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource Accent}"
+                    HorizontalOptions="End"
+                    VerticalOptions="End"
+                    Margin="0, 0, 20, 20">
+                <Border.Shadow>
+                    <Shadow Brush="Black"
+                            Opacity="0.25"
+                            Offset="0, 4"
+                            Radius="8" />
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding RegisterDeviceCommand}" />
+                </Border.GestureRecognizers>
+
+                <Image Source="plus.svg"
+                       WidthRequest="24"
+                       HeightRequest="24"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
+                    <Image.Behaviors>
+                        <toolkit:IconTintColorBehavior TintColor="{StaticResource White}" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -3,12 +3,34 @@
     x:Class="Venther.App.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:Venther.App"
-    Title="Venther.App">
+    xmlns:auth="clr-namespace:Venther.App.Views.Auth"
+    xmlns:home="clr-namespace:Venther.App.Views.Home"
+    xmlns:alerts="clr-namespace:Venther.App.Views.Alerts"
+    xmlns:workorders="clr-namespace:Venther.App.Views.WorkOrders"
+    Title="Venther"
+    FlyoutBehavior="Disabled"
+    Shell.TabBarBackgroundColor="{StaticResource Background}"
+    Shell.TabBarForegroundColor="{StaticResource Primary}"
+    Shell.TabBarTitleColor="{StaticResource Primary}"
+    Shell.TabBarUnselectedColor="{StaticResource OnSurfaceVariant}">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Route="login"
+        ContentTemplate="{DataTemplate auth:LoginPage}"
+        Shell.FlyoutItemIsVisible="False"
+        Shell.TabBarIsVisible="False" />
+
+    <TabBar Route="main">
+        <!-- TODO: Substituir ícones de abas pelos SVGs Lucide (Home, Bell/Alert, ClipboardList/Wrench) -->
+        <Tab Title="Início" Route="home" Icon="dotnet_bot.png">
+            <ShellContent ContentTemplate="{DataTemplate home:HomePage}" />
+        </Tab>
+        <Tab Title="Alertas" Route="alerts" Icon="dotnet_bot.png">
+            <ShellContent ContentTemplate="{DataTemplate alerts:AlertsPage}" />
+        </Tab>
+        <Tab Title="Chamados" Route="workorders" Icon="dotnet_bot.png">
+            <ShellContent ContentTemplate="{DataTemplate workorders:WorkOrdersPage}" />
+        </Tab>
+    </TabBar>
 
 </Shell>

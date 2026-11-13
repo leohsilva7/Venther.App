@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="Venther.App.Controls.AlertCard"
+             x:Name="CardRoot">
+
+    <Border BackgroundColor="{StaticResource Surface}"
+            StrokeShape="RoundRectangle 12"
+            StrokeThickness="1"
+            Stroke="{StaticResource AuthBorder}"
+            Padding="16">
+        <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.05" Offset="0, 2" Radius="4" />
+        </Border.Shadow>
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnCardTapped" />
+        </Border.GestureRecognizers>
+
+        <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
+            <!-- Icon in Circle (Col 0) -->
+            <Border x:Name="IconCircle"
+                    Grid.Column="0"
+                    WidthRequest="42"
+                    HeightRequest="42"
+                    StrokeShape="RoundRectangle 21"
+                    StrokeThickness="0"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center">
+                <Image x:Name="AlertIconImage"
+                       WidthRequest="20"
+                       HeightRequest="20"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+            </Border>
+
+            <!-- Middle Details (Col 1) -->
+            <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                <!-- Title & Severity / Resolved Badge -->
+                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="6" VerticalOptions="Center">
+                    <Label Grid.Column="0"
+                           Text="{Binding Alert.Title, Source={x:Reference CardRoot}}"
+                           FontFamily="InterMedium"
+                           FontSize="15"
+                           TextColor="{StaticResource OnSurface}"
+                           LineBreakMode="TailTruncation"
+                           VerticalOptions="Center" />
+
+                    <!-- Badge (Resolvido / Crítico / Aviso) -->
+                    <Border x:Name="StatusBadgeBorder"
+                            Grid.Column="1"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 6"
+                            Padding="6, 2"
+                            VerticalOptions="Center">
+                        <Label x:Name="StatusBadgeLabel"
+                               FontFamily="InterMedium"
+                               FontSize="11"
+                               VerticalOptions="Center" />
+                    </Border>
+                </Grid>
+
+                <!-- Equipment & ID -->
+                <Label Text="{Binding Alert.DeviceInfo, Source={x:Reference CardRoot}}"
+                       Style="{StaticResource BodySmall}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       LineBreakMode="TailTruncation" />
+
+                <!-- Time / Timestamp -->
+                <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                    <Image Source="clock.svg"
+                           WidthRequest="12"
+                           HeightRequest="12"
+                           Aspect="AspectFit"
+                           VerticalOptions="Center">
+                        <Image.Behaviors>
+                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                        </Image.Behaviors>
+                    </Image>
+                    <Label x:Name="TimeLabel"
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource OnSurfaceVariant}"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Action Button: "Ver" (Col 2) -->
+            <Button Grid.Column="2"
+                    Text="Ver"
+                    Style="{StaticResource PrimaryButton}"
+                    HeightRequest="36"
+                    CornerRadius="8"
+                    Padding="14, 0"
+                    FontSize="13"
+                    VerticalOptions="Center"
+                    Clicked="OnActionClicked" />
+        </Grid>
+    </Border>
+</ContentView>

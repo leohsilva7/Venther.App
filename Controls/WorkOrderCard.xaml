@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="Venther.App.Controls.WorkOrderCard"
+             x:Name="CardRoot">
+
+    <Border BackgroundColor="{StaticResource Surface}"
+            StrokeThickness="0"
+            StrokeShape="RoundRectangle 12"
+            Padding="0">
+        <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.06" Offset="0,2" Radius="6" />
+        </Border.Shadow>
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnCardTapped" />
+        </Border.GestureRecognizers>
+
+        <Grid ColumnDefinitions="6, *">
+
+            <!-- Lateral accent bar (InProgress = Accent; Scheduled = Outline; Done = green) -->
+            <BoxView x:Name="StatusBar"
+                     Grid.Column="0"
+                     WidthRequest="6"
+                     HorizontalOptions="Start"
+                     VerticalOptions="Fill" />
+
+            <!-- Card body -->
+            <VerticalStackLayout Grid.Column="1"
+                                 Padding="16"
+                                 Spacing="10">
+
+                <!-- ══════════════════ InProgress layout ══════════════════ -->
+                <VerticalStackLayout x:Name="InProgressLayout" Spacing="10" IsVisible="False">
+
+                    <!-- Header row: ID badge + status pill -->
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Label Grid.Column="0"
+                               x:Name="InProgressIdLabel"
+                               Style="{StaticResource Overline}"
+                               VerticalOptions="Center" />
+
+                        <!-- "Em Andamento" pill -->
+                        <Border Grid.Column="1"
+                                x:Name="InProgressPill"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 6"
+                                BackgroundColor="{StaticResource AccentContainer}"
+                                Padding="8, 3"
+                                VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                <!-- Pulsing dot -->
+                                <BoxView x:Name="PulseDot"
+                                         WidthRequest="6"
+                                         HeightRequest="6"
+                                         CornerRadius="3"
+                                         BackgroundColor="{StaticResource Accent}"
+                                         VerticalOptions="Center" />
+                                <Label Text="Em Andamento"
+                                       FontFamily="InterMedium"
+                                       FontSize="11"
+                                       TextColor="{StaticResource AccentText}"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <!-- Title -->
+                    <Label x:Name="InProgressTitleLabel"
+                           Style="{StaticResource Heading}"
+                           FontSize="16"
+                           LineBreakMode="TailTruncation"
+                           MaxLines="2" />
+
+                    <!-- Equipment + location -->
+                    <HorizontalStackLayout Spacing="4">
+                        <Image Source="wrench.svg"
+                               WidthRequest="13" HeightRequest="13"
+                               Aspect="AspectFit" VerticalOptions="Center">
+                            <Image.Behaviors>
+                                <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                            </Image.Behaviors>
+                        </Image>
+                        <Label x:Name="InProgressDeviceLabel"
+                               Style="{StaticResource BodySmall}"
+                               LineBreakMode="TailTruncation"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="4">
+                        <Image Source="map_pin.svg"
+                               WidthRequest="13" HeightRequest="13"
+                               Aspect="AspectFit" VerticalOptions="Center">
+                            <Image.Behaviors>
+                                <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                            </Image.Behaviors>
+                        </Image>
+                        <Label x:Name="InProgressLocationLabel"
+                               Style="{StaticResource BodySmall}"
+                               LineBreakMode="TailTruncation"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <!-- Telemetry snippet -->
+                    <Border x:Name="TelemetryBorder"
+                            BackgroundColor="{StaticResource SurfaceVariant}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="10, 8">
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Image Source="zap.svg"
+                                   WidthRequest="13" HeightRequest="13"
+                                   Aspect="AspectFit" VerticalOptions="Center">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource Accent}" />
+                                </Image.Behaviors>
+                            </Image>
+                            <Label x:Name="TelemetryLabel"
+                                   FontFamily="InterMedium"
+                                   FontSize="12"
+                                   TextColor="{StaticResource OnSurfaceVariant}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- Technician + action button -->
+                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                        <HorizontalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                            <Image Source="user.svg"
+                                   WidthRequest="14" HeightRequest="14"
+                                   Aspect="AspectFit" VerticalOptions="Center">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                                </Image.Behaviors>
+                            </Image>
+                            <Label x:Name="TechnicianLabel"
+                                   Style="{StaticResource Caption}"
+                                   TextColor="{StaticResource Primary}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <Button Grid.Column="1"
+                                Text="Ver OS"
+                                Style="{StaticResource PrimaryButton}"
+                                HeightRequest="36"
+                                CornerRadius="8"
+                                Padding="14, 0"
+                                FontSize="13"
+                                VerticalOptions="Center"
+                                Clicked="OnActionClicked" />
+                    </Grid>
+                </VerticalStackLayout>
+
+                <!-- ══════════════════ Scheduled / Done layout ══════════════════ -->
+                <VerticalStackLayout x:Name="ScheduledLayout" Spacing="10" IsVisible="False">
+
+                    <!-- Header row: ID badge + status badge -->
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Label Grid.Column="0"
+                               x:Name="ScheduledIdLabel"
+                               Style="{StaticResource Overline}"
+                               VerticalOptions="Center" />
+
+                        <!-- Status badge (Agendada / Concluída) -->
+                        <Border Grid.Column="1"
+                                x:Name="ScheduledStatusBadge"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 6"
+                                Padding="8, 3"
+                                VerticalOptions="Center">
+                            <Label x:Name="ScheduledStatusLabel"
+                                   FontFamily="InterMedium"
+                                   FontSize="11"
+                                   VerticalOptions="Center" />
+                        </Border>
+                    </Grid>
+
+                    <!-- Title -->
+                    <Label x:Name="ScheduledTitleLabel"
+                           Style="{StaticResource Heading}"
+                           FontSize="16"
+                           LineBreakMode="TailTruncation"
+                           MaxLines="2" />
+
+                    <!-- Equipment -->
+                    <HorizontalStackLayout Spacing="4">
+                        <Image Source="wrench.svg"
+                               WidthRequest="13" HeightRequest="13"
+                               Aspect="AspectFit" VerticalOptions="Center">
+                            <Image.Behaviors>
+                                <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                            </Image.Behaviors>
+                        </Image>
+                        <Label x:Name="ScheduledDeviceLabel"
+                               Style="{StaticResource BodySmall}"
+                               LineBreakMode="TailTruncation"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <!-- Location -->
+                    <HorizontalStackLayout Spacing="4">
+                        <Image Source="map_pin.svg"
+                               WidthRequest="13" HeightRequest="13"
+                               Aspect="AspectFit" VerticalOptions="Center">
+                            <Image.Behaviors>
+                                <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                            </Image.Behaviors>
+                        </Image>
+                        <Label x:Name="ScheduledLocationLabel"
+                               Style="{StaticResource BodySmall}"
+                               LineBreakMode="TailTruncation"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <!-- Scheduled date + action button -->
+                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                        <HorizontalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                            <Image Source="calendar.svg"
+                                   WidthRequest="13" HeightRequest="13"
+                                   Aspect="AspectFit" VerticalOptions="Center">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                                </Image.Behaviors>
+                            </Image>
+                            <Label x:Name="ScheduledDateLabel"
+                                   Style="{StaticResource Caption}"
+                                   TextColor="{StaticResource OnSurfaceVariant}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <Button x:Name="ScheduledActionButton"
+                                Grid.Column="1"
+                                Style="{StaticResource PrimaryButton}"
+                                HeightRequest="36"
+                                CornerRadius="8"
+                                Padding="14, 0"
+                                FontSize="13"
+                                VerticalOptions="Center"
+                                Clicked="OnActionClicked" />
+                    </Grid>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </Grid>
+    </Border>
+</ContentView>

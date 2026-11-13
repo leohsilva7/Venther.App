@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Venther.App.ViewModels"
+             xmlns:controls="clr-namespace:Venther.App.Controls"
+             xmlns:models="clr-namespace:Venther.App.Models"
+             x:Class="Venther.App.Views.Alerts.AlertsPage"
+             x:DataType="vm:AlertsViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Row 0: Header -->
+        <controls:AppHeader Grid.Row="0"
+                            Title="Alertas"
+                            ShowSyncButton="True"
+                            ShowBellButton="False"
+                            SyncCommand="{Binding RefreshCommand}" />
+
+        <!-- Row 1: Scrollable content -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding FilteredAlerts}"
+                        SelectionMode="None">
+
+            <!-- Header: Segmented filter + counter -->
+            <CollectionView.Header>
+                <VerticalStackLayout Spacing="0">
+
+                    <!-- Segmented Control -->
+                    <controls:SegmentedControl ItemsSource="{Binding FilterSegments}"
+                                              SelectedIndex="{Binding SelectedSegmentIndex, Mode=TwoWay}"
+                                              Margin="20, 16, 20, 0" />
+
+                    <!-- Active alerts counter -->
+                    <Label Margin="20, 12, 20, 4"
+                           Style="{StaticResource BodySmall}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{Binding FilteredAlerts.Count}" FontFamily="InterSemiBold" TextColor="{StaticResource OnSurface}" />
+                                <Span Text=" alertas encontrados" TextColor="{StaticResource OnSurfaceVariant}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <BoxView HeightRequest="8" Color="Transparent" />
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <!-- Item Template -->
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:AlertItem">
+                    <controls:AlertCard Alert="{Binding .}"
+                                       Margin="20, 0, 20, 12" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <!-- Empty state -->
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     Spacing="8"
+                                     Margin="20, 48">
+                    <Label Text="Nenhum alerta encontrado"
+                           Style="{StaticResource Heading}"
+                           HorizontalOptions="Center" />
+                    <Label Text="Não há alertas para o filtro selecionado."
+                           Style="{StaticResource BodySmall}"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <!-- Footer: clearance for tab bar -->
+            <CollectionView.Footer>
+                <BoxView HeightRequest="80" Color="Transparent" />
+            </CollectionView.Footer>
+
+        </CollectionView>
+
+        <!-- Loading overlay -->
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="{StaticResource Primary}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>

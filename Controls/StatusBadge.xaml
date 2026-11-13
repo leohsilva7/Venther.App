@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Venther.App.Controls.StatusBadge">
+
+    <Border x:Name="BadgeBorder"
+            StrokeThickness="0"
+            StrokeShape="RoundRectangle 8"
+            Padding="8, 4"
+            HorizontalOptions="Start"
+            VerticalOptions="Center">
+        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+            <!-- Colored dot (bolinha) -->
+            <BoxView x:Name="BadgeDot"
+                     WidthRequest="6"
+                     HeightRequest="6"
+                     CornerRadius="3"
+                     VerticalOptions="Center" />
+
+            <!-- Status text -->
+            <Label x:Name="BadgeLabel"
+                   FontFamily="InterMedium"
+                   FontSize="12"
+                   VerticalOptions="Center" />
+        </HorizontalStackLayout>
+    </Border>
+</ContentView>

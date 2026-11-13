@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:Venther.App.Controls"
+             x:Class="Venther.App.Controls.DeviceCard"
+             x:Name="CardRoot">
+
+    <Border BackgroundColor="{StaticResource Surface}"
+            StrokeThickness="0"
+            StrokeShape="RoundRectangle 8"
+            Padding="0">
+        <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.06" Offset="0,2" Radius="4" />
+        </Border.Shadow>
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnCardTapped" />
+        </Border.GestureRecognizers>
+
+        <Grid ColumnDefinitions="6, *">
+            <!-- Lateral Status Indicator Bar (6px) -->
+            <BoxView x:Name="StatusBar"
+                     Grid.Column="0"
+                     WidthRequest="6"
+                     HorizontalOptions="Start"
+                     VerticalOptions="Fill" />
+
+            <!-- Card Content Area -->
+            <VerticalStackLayout Grid.Column="1"
+                                 Padding="16"
+                                 Spacing="10">
+
+                <!-- Header: ID (Overline) and StatusBadge -->
+                <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                    <Label Grid.Column="0"
+                           Text="{Binding Device.Id, Source={x:Reference CardRoot}}"
+                           Style="{StaticResource Overline}"
+                           VerticalOptions="Center" />
+
+                    <controls:StatusBadge Grid.Column="1"
+                                          Status="{Binding Device.Status, Source={x:Reference CardRoot}}"
+                                          VerticalOptions="Center" />
+                </Grid>
+
+                <!-- Equipment Name -->
+                <Label Text="{Binding Device.Name, Source={x:Reference CardRoot}}"
+                       Style="{StaticResource Heading}"
+                       LineBreakMode="TailTruncation"
+                       MaxLines="2" />
+
+                <!-- Location with Map Pin Icon -->
+                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                    <Image Source="map_pin.svg"
+                           WidthRequest="14"
+                           HeightRequest="14"
+                           Aspect="AspectFit"
+                           VerticalOptions="Center">
+                        <Image.Behaviors>
+                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                        </Image.Behaviors>
+                    </Image>
+
+                    <Label Text="{Binding Device.Location, Source={x:Reference CardRoot}}"
+                           Style="{StaticResource BodySmall}"
+                           VerticalOptions="Center"
+                           LineBreakMode="TailTruncation" />
+                </HorizontalStackLayout>
+
+                <!-- Last Reading / Status Info -->
+                <Label Text="{Binding Device.LastReading, Source={x:Reference CardRoot}}"
+                       Style="{StaticResource Caption}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       LineBreakMode="TailTruncation" />
+
+                <!-- Divider Line -->
+                <BoxView HeightRequest="1"
+                         Color="{StaticResource SurfaceVariant}"
+                         Margin="0, 4, 0, 4" />
+
+                <!-- Link to Details -->
+                <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                    <Label Grid.Column="0"
+                           Text="Ver Detalhes do Equipamento"
+                           FontFamily="InterMedium"
+                           FontSize="12"
+                           TextColor="{StaticResource Primary}"
+                           VerticalOptions="Center" />
+
+                    <Image Grid.Column="1"
+                           Source="chevron_right.svg"
+                           WidthRequest="14"
+                           HeightRequest="14"
+                           Aspect="AspectFit"
+                           VerticalOptions="Center">
+                        <Image.Behaviors>
+                            <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                        </Image.Behaviors>
+                    </Image>
+                </Grid>
+            </VerticalStackLayout>
+        </Grid>
+    </Border>
+</ContentView>
