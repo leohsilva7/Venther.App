@@ -1,16 +1,17 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Venther.App.Models;
+using Venther.App.Services.Api.Dtos;
 using Device = Venther.App.Models.Device;
 
 namespace Venther.App.Services.Interfaces;
 
 public interface IDeviceService
 {
-    Task<IReadOnlyList<Device>> GetDevicesAsync();
+    Task<PagedResult<Device>> GetDevicesAsync(int page = 1, int pageSize = 20);
     Task<Device?> GetDeviceByIdAsync(string id);
-    Task<bool> RegisterDeviceAsync(Device device);
+    Task<Device> RegisterDeviceAsync(Guid customerId, string macAddress, string location);
     Task<bool> UpdateDeviceStatusAsync(string id, DeviceStatus status);
-    Task<DeviceTelemetry> GetTelemetryAsync(string deviceId);
-    Task<IReadOnlyList<double>> GetTemperatureTrendAsync(string deviceId, TrendPeriod period);
+    Task<IReadOnlyList<BoardLogDto>> GetBoardLogsAsync(Guid boardId, string dateMonth);
 }

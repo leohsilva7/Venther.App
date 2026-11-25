@@ -1,5 +1,7 @@
 using Microsoft.Maui.Controls;
 using Venther.App.Helpers;
+using Venther.App.Services.Api;
+using Venther.App.Services.Interfaces;
 using Venther.App.Views.Alerts;
 using Venther.App.Views.Auth;
 using Venther.App.Views.Devices;
@@ -10,6 +12,8 @@ namespace Venther.App;
 
 public partial class AppShell : Shell
 {
+    private readonly ISessionService? _sessionService;
+
     public AppShell()
     {
         InitializeComponent();
@@ -24,5 +28,30 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(Routes.CheckEmail, typeof(CheckEmailPage));
         Routing.RegisterRoute(Routes.ResetPassword, typeof(ResetPasswordPage));
         Routing.RegisterRoute(Routes.PasswordResetSuccess, typeof(PasswordResetSuccessPage));
+
+        _sessionService = IPlatformApplication.Current?.Services.GetService(typeof(ISessionService)) as ISessionService;
+    }
+
+    protected override async void OnParentSet()
+    {
+        base.OnParentSet();
+
+        if (Parent != null && _sessionService != null)
+        {
+            await _sessionService.RestoreAsync();
+
+            if (_sessionService.IsAuthenticated)
+            {
+                if (IPlatformApplication.Current?.Services.GetService(typeof(ITelemetryHubService)) is ITelemetryHubService hub)
+                {
+                    _ = hub.ConnectAsync();
+                }
+                await GoToAsync("//main/home");
+            }
+            else
+            {
+                await GoToAsync("//login");
+            }
+        }
     }
 }

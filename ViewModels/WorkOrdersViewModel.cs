@@ -1,20 +1,27 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls;
 using Venther.App.Controls;
 using Venther.App.Helpers;
 using Venther.App.Models;
+using Venther.App.Services.Api;
 using Venther.App.Services.Interfaces;
 
 namespace Venther.App.ViewModels;
 
 public partial class WorkOrdersViewModel : BaseViewModel
 {
+    private const int PageSize = 20;
     private readonly IWorkOrderService _workOrderService;
-    private List<WorkOrder> _allWorkOrders = new();
+    private readonly List<WorkOrder> _allWorkOrders = new();
+    private int _currentPage = 1;
+    private int _totalPages = 1;
+    private bool _isLoadingMore;
 
     [ObservableProperty]
     private ObservableCollection<WorkOrder> _filteredWorkOrders = new();
@@ -28,6 +35,15 @@ public partial class WorkOrdersViewModel : BaseViewModel
     [ObservableProperty]
     private int _activeCount;
 
+    [ObservableProperty]
+    private bool _isRefreshing;
+
+    [ObservableProperty]
+    private bool _hasError;
+
+    [ObservableProperty]
+    private string _errorMessage = string.Empty;
+
     public WorkOrdersViewModel(IWorkOrderService workOrderService)
     {
         _workOrderService = workOrderService;
@@ -39,9 +55,9 @@ public partial class WorkOrdersViewModel : BaseViewModel
     {
         FilterSegments = new ObservableCollection<SegmentItem>
         {
-            new SegmentItem("Todas",      0, "all"),
+            new SegmentItem("Todas", 0, "all"),
             new SegmentItem("Em andamento", 0, "inprogress"),
-            new SegmentItem("Agendadas",  0, "scheduled"),
+            new SegmentItem("Agendadas", 0, "scheduled"),
             new SegmentItem("Concluídas", 0, "done"),
         };
     }
@@ -49,28 +65,85 @@ public partial class WorkOrdersViewModel : BaseViewModel
     partial void OnSelectedSegmentIndexChanged(int value) => ApplyFilter();
 
     [RelayCommand]
-    private async Task Refresh()
+    public async Task Refresh()
     {
-        if (IsBusy) return;
+        if (IsBusy)
+        {
+            IsRefreshing = false;
+            return;
+        }
+
         IsBusy = true;
+        HasError = false;
+        ErrorMessage = string.Empty;
+        _currentPage = 1;
+
         try
         {
-            var orders = await _workOrderService.GetWorkOrdersAsync();
-            _allWorkOrders = orders.ToList();
+            var page = await _workOrderService.GetWorkOrdersAsync(_currentPage, PageSize);
+            _allWorkOrders.Clear();
+            _allWorkOrders.AddRange(page.Items);
+            _totalPages = Math.Max(1, page.TotalPages);
 
-            FilterSegments[0].Count = _allWorkOrders.Count;
-            FilterSegments[1].Count = _allWorkOrders.Count(w => w.Status == WorkOrderStatus.InProgress);
-            FilterSegments[2].Count = _allWorkOrders.Count(w => w.Status == WorkOrderStatus.Scheduled);
-            FilterSegments[3].Count = _allWorkOrders.Count(w => w.Status == WorkOrderStatus.Done);
-
-            ActiveCount = FilterSegments[1].Count + FilterSegments[2].Count;
-
+            UpdateCounts();
             ApplyFilter();
+        }
+        catch (ApiException ex)
+        {
+            HasError = true;
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            HasError = true;
+            ErrorMessage = "Não foi possível carregar as ordens de serviço.";
         }
         finally
         {
             IsBusy = false;
+            IsRefreshing = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task LoadMoreAsync()
+    {
+        if (IsBusy || _isLoadingMore || _currentPage >= _totalPages)
+            return;
+
+        try
+        {
+            _isLoadingMore = true;
+            var nextPage = _currentPage + 1;
+            var page = await _workOrderService.GetWorkOrdersAsync(nextPage, PageSize);
+
+            if (page.Items.Count > 0)
+            {
+                _currentPage = nextPage;
+                _totalPages = Math.Max(1, page.TotalPages);
+                _allWorkOrders.AddRange(page.Items);
+                UpdateCounts();
+                ApplyFilter();
+            }
+        }
+        catch
+        {
+            // Mantém os itens já carregados caso a paginação falhe
+        }
+        finally
+        {
+            _isLoadingMore = false;
+        }
+    }
+
+    private void UpdateCounts()
+    {
+        FilterSegments[0].Count = _allWorkOrders.Count;
+        FilterSegments[1].Count = _allWorkOrders.Count(w => w.Status == WorkOrderStatus.InProgress);
+        FilterSegments[2].Count = _allWorkOrders.Count(w => w.Status == WorkOrderStatus.Scheduled);
+        FilterSegments[3].Count = _allWorkOrders.Count(w => w.Status == WorkOrderStatus.Done);
+
+        ActiveCount = FilterSegments[1].Count + FilterSegments[2].Count;
     }
 
     private void ApplyFilter()

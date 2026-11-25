@@ -1,6 +1,10 @@
 using CommunityToolkit.Maui;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Venther.App.Helpers;
+using Venther.App.Services.Api;
 using Venther.App.Services.Interfaces;
+using Venther.App.Services;
 using Venther.App.Services.Mocks;
 using Venther.App.ViewModels;
 using Venther.App.Views.Alerts;
@@ -37,11 +41,26 @@ public static class MauiProgram
         });
 #endif
 
+        // API & Session Infrastructure
+        builder.Services.AddSingleton<ISessionService, SessionService>();
+        builder.Services.AddTransient<AuthHeaderHandler>();
+
+        builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
+        {
+            var baseUri = $"{ApiConfig.BaseUrl.TrimEnd('/')}/{ApiConfig.ApiPath.Trim('/')}/";
+            client.BaseAddress = new Uri(baseUri);
+        })
+        .AddHttpMessageHandler<AuthHeaderHandler>();
+
+        // Services (Singleton)
+        builder.Services.AddSingleton<ITelemetryHubService, TelemetryHubService>();
+        builder.Services.AddSingleton<IAuthService, AuthService>();
+        builder.Services.AddSingleton<IDeviceService, DeviceService>();
+        builder.Services.AddSingleton<IClientService, ClientService>();
+        builder.Services.AddSingleton<IWorkOrderService, WorkOrderService>();
+        builder.Services.AddSingleton<IAlertService, AlertService>();
+
         // Mock Services (Singleton)
-        builder.Services.AddSingleton<IAuthService, MockAuthService>();
-        builder.Services.AddSingleton<IDeviceService, MockDeviceService>();
-        builder.Services.AddSingleton<IWorkOrderService, MockWorkOrderService>();
-        builder.Services.AddSingleton<IAlertService, MockAlertService>();
         builder.Services.AddSingleton<IDeviceProvisioningService, MockDeviceProvisioningService>();
 
         // ViewModels & Pages (Transient)

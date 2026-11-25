@@ -1,15 +1,27 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Venther.App.Helpers;
+using Venther.App.Services.Api;
+using Venther.App.Services.Interfaces;
 
 namespace Venther.App.ViewModels;
 
 [QueryProperty(nameof(Email), "Email")]
+[QueryProperty(nameof(Code), "Code")]
 public partial class ResetPasswordViewModel : BaseViewModel
 {
+    private readonly IAuthService _authService;
+
     [ObservableProperty]
     private string _email = string.Empty;
+
+    [ObservableProperty]
+    private string _code = string.Empty;
 
     [ObservableProperty]
     private string _newPassword = string.Empty;
@@ -22,6 +34,12 @@ public partial class ResetPasswordViewModel : BaseViewModel
 
     [ObservableProperty]
     private bool _hasUppercase;
+
+    [ObservableProperty]
+    private bool _hasLowercase;
+
+    [ObservableProperty]
+    private bool _hasNumber;
 
     [ObservableProperty]
     private bool _hasSpecialChar;
@@ -37,6 +55,12 @@ public partial class ResetPasswordViewModel : BaseViewModel
 
     [ObservableProperty]
     private bool _canSubmit;
+
+    [ObservableProperty]
+    private bool _hasError;
+
+    [ObservableProperty]
+    private string _errorMessage = string.Empty;
 
     // Password strength: 0 to 4 segments
     [ObservableProperty]
@@ -60,8 +84,9 @@ public partial class ResetPasswordViewModel : BaseViewModel
     [ObservableProperty]
     private bool _isSegment4Active;
 
-    public ResetPasswordViewModel()
+    public ResetPasswordViewModel(IAuthService authService)
     {
+        _authService = authService;
         Title = "Redefinir Senha";
         UpdateStrength();
     }
@@ -72,19 +97,25 @@ public partial class ResetPasswordViewModel : BaseViewModel
         CheckPasswordsMatch();
         UpdateStrength();
         UpdateCanSubmit();
+        HasError = false;
+        ErrorMessage = string.Empty;
     }
 
     partial void OnConfirmPasswordChanged(string value)
     {
         CheckPasswordsMatch();
         UpdateCanSubmit();
+        HasError = false;
+        ErrorMessage = string.Empty;
     }
 
     private void ValidatePasswordRules()
     {
         var pwd = NewPassword ?? string.Empty;
-        HasMinLength = pwd.Length >= 8;
+        HasMinLength = pwd.Length >= 8 && pwd.Length <= 100;
         HasUppercase = pwd.Any(char.IsUpper);
+        HasLowercase = pwd.Any(char.IsLower);
+        HasNumber = pwd.Any(char.IsDigit);
         HasSpecialChar = pwd.Any(ch => !char.IsLetterOrDigit(ch));
 
         IsPasswordValid = Validators.IsValidPassword(pwd);
@@ -117,8 +148,8 @@ public partial class ResetPasswordViewModel : BaseViewModel
 
         int score = 0;
         if (pwd.Length >= 8) score++;
-        if (pwd.Length >= 10 || (pwd.Any(char.IsDigit) && pwd.Any(char.IsLetter))) score++;
         if (pwd.Any(char.IsUpper) && pwd.Any(char.IsLower)) score++;
+        if (pwd.Any(char.IsDigit)) score++;
         if (pwd.Any(ch => !char.IsLetterOrDigit(ch))) score++;
 
         StrengthLevel = score;
@@ -154,7 +185,7 @@ public partial class ResetPasswordViewModel : BaseViewModel
 
     private void UpdateCanSubmit()
     {
-        CanSubmit = IsPasswordValid && PasswordsMatch && !IsBusy;
+        CanSubmit = IsPasswordValid && PasswordsMatch && !string.IsNullOrWhiteSpace(Code) && !IsBusy;
     }
 
     [RelayCommand]
@@ -162,15 +193,34 @@ public partial class ResetPasswordViewModel : BaseViewModel
     {
         if (!CanSubmit || IsBusy) return;
 
+        HasError = false;
+        ErrorMessage = string.Empty;
+
         try
         {
             IsBusy = true;
             UpdateCanSubmit();
 
-            // Mock delay simulating API reset call
-            await Task.Delay(1000);
+            await _authService.ResetPasswordAsync(Email.Trim(), Code.Trim(), NewPassword, ConfirmPassword);
 
             await Shell.Current.GoToAsync(Routes.PasswordResetSuccess);
+        }
+        catch (ApiException ex)
+        {
+            HasError = true;
+            if (ex.StatusCode == 400 && ex.Message.Contains("code", StringComparison.OrdinalIgnoreCase))
+            {
+                ErrorMessage = "Código de verificação inválido ou expirado.";
+            }
+            else
+            {
+                ErrorMessage = ex.Message;
+            }
+        }
+        catch (Exception)
+        {
+            HasError = true;
+            ErrorMessage = "Não foi possível redefinir a senha. Tente novamente.";
         }
         finally
         {

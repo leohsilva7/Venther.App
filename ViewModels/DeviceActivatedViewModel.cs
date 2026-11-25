@@ -1,41 +1,64 @@
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls;
 using Venther.App.Helpers;
+using Venther.App.Services.Interfaces;
 
 namespace Venther.App.ViewModels;
 
+[QueryProperty(nameof(BoardId), "BoardId")]
 [QueryProperty(nameof(ClientName), "ClientName")]
 [QueryProperty(nameof(InstallationLocation), "InstallationLocation")]
 [QueryProperty(nameof(HardwareId), "HardwareId")]
+[QueryProperty(nameof(WifiSsid), "WifiSsid")]
+[QueryProperty(nameof(ActivationTimestamp), "ActivationTimestamp")]
 public partial class DeviceActivatedViewModel : BaseViewModel
 {
-    [ObservableProperty]
-    private string _clientName = "Hospital Santa Casa";
+    private readonly ITelemetryHubService _telemetryHub;
 
     [ObservableProperty]
-    private string _installationLocation = "Chiller 04 - Cobertura";
+    private string _boardId = string.Empty;
 
     [ObservableProperty]
-    private string _hardwareId = "ESP32-NODE-089A";
+    private string _clientName = string.Empty;
 
     [ObservableProperty]
-    private string _wifiSsid = "Venther_Tech_2.4G";
+    private string _installationLocation = string.Empty;
 
     [ObservableProperty]
-    private string _signalStrength = "-48 dBm (Excelente)";
+    private string _hardwareId = string.Empty;
 
     [ObservableProperty]
-    private string _initialReading = "22.4°C · Pressão 12.1 bar";
+    private string _wifiSsid = string.Empty;
+
+    [ObservableProperty]
+    private string _signalStrength = "Conectado";
+
+    [ObservableProperty]
+    private string _initialReading = "Aguardando primeira leitura";
 
     [ObservableProperty]
     private string _activationTimestamp = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
 
-    public DeviceActivatedViewModel()
+    public DeviceActivatedViewModel(ITelemetryHubService telemetryHub)
     {
+        _telemetryHub = telemetryHub;
         Title = "Dispositivo Ativado";
+    }
+
+    partial void OnBoardIdChanged(string value)
+    {
+        if (Guid.TryParse(value, out var guid))
+        {
+            var telemetry = _telemetryHub.GetLatestTelemetry(guid);
+            if (telemetry != null)
+            {
+                InitialReading = $"{telemetry.SupplyAirTemperature.ToString("0.0", CultureInfo.InvariantCulture)}°C · ΔP {telemetry.EvaporatorCoilPressureDrop.ToString("0", CultureInfo.InvariantCulture)} Pa";
+            }
+        }
     }
 
     [RelayCommand]

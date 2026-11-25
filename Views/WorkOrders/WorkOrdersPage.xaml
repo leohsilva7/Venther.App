@@ -21,9 +21,14 @@
                             FilterCommand="{Binding OpenFilterCommand}" />
 
         <!-- Row 1: Lista -->
-        <CollectionView Grid.Row="1"
-                        ItemsSource="{Binding FilteredWorkOrders}"
-                        SelectionMode="None">
+        <RefreshView Grid.Row="1"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}"
+                     RefreshColor="{StaticResource Primary}">
+            <CollectionView ItemsSource="{Binding FilteredWorkOrders}"
+                            SelectionMode="None"
+                            RemainingItemsThreshold="3"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
 
             <!-- Header: SegmentedControl + counter -->
             <CollectionView.Header>
@@ -58,19 +63,48 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
 
-            <!-- Empty state -->
+            <!-- Empty / Error state -->
             <CollectionView.EmptyView>
                 <VerticalStackLayout HorizontalOptions="Center"
                                      VerticalOptions="Center"
-                                     Spacing="8"
+                                     Spacing="12"
                                      Margin="20, 48">
-                    <Label Text="Nenhum chamado encontrado"
-                           Style="{StaticResource Heading}"
-                           HorizontalOptions="Center" />
-                    <Label Text="Não há ordens de serviço para o filtro selecionado."
-                           Style="{StaticResource BodySmall}"
-                           HorizontalOptions="Center"
-                           HorizontalTextAlignment="Center" />
+                    <VerticalStackLayout Spacing="12"
+                                         IsVisible="{Binding HasError}"
+                                         HorizontalOptions="Center">
+                        <Label Text="{Binding ErrorMessage}"
+                               Style="{StaticResource BodySmall}"
+                               TextColor="{StaticResource Error}"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                        <Button Text="Tentar novamente"
+                                Command="{Binding RefreshCommand}"
+                                BackgroundColor="{StaticResource Primary}"
+                                TextColor="{StaticResource White}"
+                                CornerRadius="8"
+                                HeightRequest="44"
+                                Padding="20, 0"
+                                HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="8"
+                                         HorizontalOptions="Center">
+                        <VerticalStackLayout.Triggers>
+                            <DataTrigger TargetType="VerticalStackLayout" Binding="{Binding IsBusy}" Value="True">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="VerticalStackLayout" Binding="{Binding HasError}" Value="True">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                        </VerticalStackLayout.Triggers>
+                        <Label Text="Nenhum chamado encontrado"
+                               Style="{StaticResource Heading}"
+                               HorizontalOptions="Center" />
+                        <Label Text="Não há ordens de serviço para o filtro selecionado."
+                               Style="{StaticResource BodySmall}"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
 
@@ -79,7 +113,8 @@
                 <BoxView HeightRequest="80" Color="Transparent" />
             </CollectionView.Footer>
 
-        </CollectionView>
+            </CollectionView>
+        </RefreshView>
 
         <!-- Loading overlay -->
         <ActivityIndicator Grid.Row="1"

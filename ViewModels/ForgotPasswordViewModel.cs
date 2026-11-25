@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls;
 using Venther.App.Helpers;
+using Venther.App.Services.Api;
 using Venther.App.Services.Interfaces;
 
 namespace Venther.App.ViewModels;
@@ -77,10 +78,7 @@ public partial class ForgotPasswordViewModel : BaseViewModel
         IsBusy = true;
         try
         {
-            // Simula o envio com atraso de rede
-            await Task.Delay(1500);
-
-            await _authService.SendPasswordResetEmailAsync(Email.Trim());
+            await _authService.ForgotPasswordAsync(Email.Trim());
 
             // Navega para CheckEmailPage passando o e-mail
             var navParams = new Dictionary<string, object>
@@ -89,6 +87,11 @@ public partial class ForgotPasswordViewModel : BaseViewModel
             };
 
             await Shell.Current.GoToAsync(Routes.CheckEmail, navParams);
+        }
+        catch (ApiException ex)
+        {
+            HasEmailError = true;
+            EmailErrorMessage = ex.Message;
         }
         catch (Exception)
         {
@@ -104,7 +107,6 @@ public partial class ForgotPasswordViewModel : BaseViewModel
     [RelayCommand]
     private async Task GoBackAsync()
     {
-        // Retorna ao login
         if (Shell.Current != null)
         {
             await Shell.Current.GoToAsync("..");

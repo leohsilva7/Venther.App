@@ -189,7 +189,7 @@
                             Value="{Binding ReturnTemp.Value}" Unit="{Binding ReturnTemp.Unit}"
                             Caption="{Binding ReturnTemp.Caption}" IsAlert="{Binding ReturnTemp.IsAlert}"
                             IconSource="thermometer.svg" TrendIconSource="minus.svg" />
-                        <controls:MetricCard Grid.Row="1" Grid.Column="0" Title="Pressão Gás"
+                        <controls:MetricCard Grid.Row="1" Grid.Column="0" Title="Temp. Linha Gás"
                             Value="{Binding Gas.Value}" Unit="{Binding Gas.Unit}"
                             Caption="{Binding Gas.Caption}" IsAlert="{Binding Gas.IsAlert}"
                             IconSource="gauge.svg" TrendIconSource="arrow_right.svg" />

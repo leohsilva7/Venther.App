@@ -15,6 +15,8 @@ public enum WorkOrderStatus
 public class WorkOrder
 {
     public string Id { get; set; } = string.Empty;
+    public Guid BoardId { get; set; }
+    public string BoardMacAddress { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string DeviceName { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;

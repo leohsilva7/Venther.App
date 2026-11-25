@@ -5,6 +5,7 @@ namespace Venther.App.Models;
 public class AlertItem
 {
     public string Id { get; set; } = string.Empty;
+    public Guid BoardId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string DeviceInfo { get; set; } = string.Empty;
     public AlertSeverity Severity { get; set; } = AlertSeverity.Warning;

@@ -16,8 +16,13 @@
 
         <!-- Main Body Grid: List + FAB Overlay -->
         <Grid Grid.Row="1">
-            <CollectionView ItemsSource="{Binding FilteredDevices}"
-                            SelectionMode="None">
+            <RefreshView IsRefreshing="{Binding IsRefreshing}"
+                         Command="{Binding RefreshCommand}"
+                         RefreshColor="{StaticResource Primary}">
+                <CollectionView ItemsSource="{Binding FilteredDevices}"
+                                SelectionMode="None"
+                                RemainingItemsThreshold="3"
+                                RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
 
                 <!-- Header: Search Field, Summary Chips, Section Title -->
                 <CollectionView.Header>
@@ -175,38 +180,72 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
 
-                <!-- Empty State -->
+                <!-- Empty / Loading / Error State -->
                 <CollectionView.EmptyView>
                     <VerticalStackLayout Spacing="12"
                                          Padding="20, 48"
                                          HorizontalOptions="Center">
-                        <Border WidthRequest="48"
-                                HeightRequest="48"
-                                StrokeShape="RoundRectangle 24"
-                                StrokeThickness="0"
-                                BackgroundColor="{StaticResource SurfaceVariant}"
-                                HorizontalOptions="Center">
-                            <Image Source="search.svg"
-                                   WidthRequest="22"
-                                   HeightRequest="22"
-                                   Aspect="AspectFit"
+                        <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                           IsVisible="{Binding IsBusy}"
+                                           Color="{StaticResource Primary}"
+                                           HorizontalOptions="Center" />
+
+                        <VerticalStackLayout Spacing="12"
+                                             IsVisible="{Binding HasError}"
+                                             HorizontalOptions="Center">
+                            <Label Text="{Binding ErrorMessage}"
+                                   Style="{StaticResource BodySmall}"
+                                   TextColor="{StaticResource Error}"
                                    HorizontalOptions="Center"
-                                   VerticalOptions="Center">
-                                <Image.Behaviors>
-                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
-                                </Image.Behaviors>
-                            </Image>
-                        </Border>
+                                   HorizontalTextAlignment="Center" />
+                            <Button Text="Tentar novamente"
+                                    Command="{Binding LoadDevicesCommand}"
+                                    BackgroundColor="{StaticResource Primary}"
+                                    TextColor="{StaticResource White}"
+                                    CornerRadius="8"
+                                    HeightRequest="44"
+                                    Padding="20, 0"
+                                    HorizontalOptions="Center" />
+                        </VerticalStackLayout>
 
-                        <Label Text="Nenhum equipamento encontrado"
-                               Style="{StaticResource Heading}"
-                               FontSize="16"
-                               HorizontalOptions="Center" />
+                        <VerticalStackLayout Spacing="12"
+                                             HorizontalOptions="Center">
+                            <VerticalStackLayout.Triggers>
+                                <DataTrigger TargetType="VerticalStackLayout" Binding="{Binding IsBusy}" Value="True">
+                                    <Setter Property="IsVisible" Value="False" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="VerticalStackLayout" Binding="{Binding HasError}" Value="True">
+                                    <Setter Property="IsVisible" Value="False" />
+                                </DataTrigger>
+                            </VerticalStackLayout.Triggers>
+                            <Border WidthRequest="48"
+                                    HeightRequest="48"
+                                    StrokeShape="RoundRectangle 24"
+                                    StrokeThickness="0"
+                                    BackgroundColor="{StaticResource SurfaceVariant}"
+                                    HorizontalOptions="Center">
+                                <Image Source="search.svg"
+                                       WidthRequest="22"
+                                       HeightRequest="22"
+                                       Aspect="AspectFit"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center">
+                                    <Image.Behaviors>
+                                        <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                                    </Image.Behaviors>
+                                </Image>
+                            </Border>
 
-                        <Label Text="Verifique a digitação ou selecione outro filtro."
-                               Style="{StaticResource BodySmall}"
-                               HorizontalOptions="Center"
-                               HorizontalTextAlignment="Center" />
+                            <Label Text="Nenhum equipamento encontrado"
+                                   Style="{StaticResource Heading}"
+                                   FontSize="16"
+                                   HorizontalOptions="Center" />
+
+                            <Label Text="Verifique a digitação ou selecione outro filtro."
+                                   Style="{StaticResource BodySmall}"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
 
@@ -215,6 +254,7 @@
                     <BoxView HeightRequest="88" Color="Transparent" />
                 </CollectionView.Footer>
             </CollectionView>
+            </RefreshView>
 
             <!-- Floating Action Button (FAB) Orange (+) with Shadow -->
             <Border WidthRequest="56"

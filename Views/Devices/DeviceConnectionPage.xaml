@@ -170,7 +170,25 @@
                                            Placeholder="Digite a senha do Wi-Fi"
                                            Text="{Binding WifiPassword, Mode=TwoWay}"
                                            IsPassword="True"
+                                           ReturnType="Next" />
+
+                        <!-- MAC Address Input -->
+                        <controls:AppEntry Label="Endereço MAC da Placa"
+                                           Placeholder="AA:BB:CC:DD:EE:FF"
+                                           Text="{Binding MacAddress, Mode=TwoWay}"
                                            ReturnType="Done" />
+
+                        <!-- Error Banner -->
+                        <Border IsVisible="{Binding HasError}"
+                                BackgroundColor="{StaticResource ErrorBg}"
+                                Stroke="{StaticResource ErrorBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="12, 10">
+                            <Label Text="{Binding ErrorMessage}"
+                                   Style="{StaticResource BodySmall}"
+                                   TextColor="{StaticResource Error}" />
+                        </Border>
                     </VerticalStackLayout>
                 </Border>
 
