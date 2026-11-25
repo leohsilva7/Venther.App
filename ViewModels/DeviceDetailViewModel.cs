@@ -1,27 +1,37 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Globalization;
+using Microsoft.Maui.Controls;
 using Venther.App.Models;
+using Venther.App.Services.Api;
+using Venther.App.Services.Api.Dtos;
 using Venther.App.Services.Interfaces;
-using static Android.Telephony.CarrierConfigManager;
 
 namespace Venther.App.ViewModels;
 
 public record MetricViewData(string Value, string Unit, string Caption, bool IsAlert)
 {
-    public static MetricViewData Empty => new("--", "", "", false);
+    public static MetricViewData Empty => new("--", "", "Sem leitura", false);
 }
 
-[QueryProperty(nameof(DeviceId), "id")]
+[QueryProperty(nameof(DeviceId), "DeviceId")]
 public partial class DeviceDetailViewModel : BaseViewModel
 {
-    private static readonly CultureInfo Inv = CultureInfo.InvariantCulture; // Figma usa ponto (12.4)
+    private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     private readonly IDeviceService _deviceService;
+    private readonly ITelemetryHubService _telemetryHub;
+    private Guid _boardGuid;
 
-    public DeviceDetailViewModel(IDeviceService deviceService)
+    public DeviceDetailViewModel(IDeviceService deviceService, ITelemetryHubService telemetryHub)
     {
         _deviceService = deviceService;
+        _telemetryHub = telemetryHub;
         Title = "Detalhes do Equipamento";
+        _telemetryHub.TelemetryUpdated += OnTelemetryUpdated;
     }
 
     [ObservableProperty] private string? deviceId;
@@ -34,9 +44,10 @@ public partial class DeviceDetailViewModel : BaseViewModel
     [ObservableProperty] private MetricViewData gas = MetricViewData.Empty;
     [ObservableProperty] private MetricViewData deltaP = MetricViewData.Empty;
 
-    [ObservableProperty] private string statusLabel = "Normal (100%)";
+    [ObservableProperty] private string statusLabel = "Offline";
     [ObservableProperty] private bool hasAlert;
-    [ObservableProperty] private string nowLabel = "Agora: --";
+    [ObservableProperty] private string nowLabel = "Sem leitura";
+    [ObservableProperty] private string historyStatusText = string.Empty;
 
     public bool IsHistoryTab => !IsRealtimeTab;
     public bool IsPeriod1h => SelectedPeriod == TrendPeriod.OneHour;
@@ -66,21 +77,155 @@ public partial class DeviceDetailViewModel : BaseViewModel
         IsBusy = true;
         try
         {
-            var id = DeviceId ?? "mock";
-            var t = await _deviceService.GetTelemetryAsync(id);
+            if (!Guid.TryParse(DeviceId, out _boardGuid))
+            {
+                ApplyNoData();
+                return;
+            }
 
-            Supply = new($"{t.Supply.Value.ToString("0.0", Inv)}°C", "", t.Supply.StatusText, t.Supply.IsAlert);
-            ReturnTemp = new($"{t.Return.Value.ToString("0.0", Inv)}°C", "", t.Return.StatusText, t.Return.IsAlert);
-            Gas = new(t.GasPressure.Value.ToString("0.0", Inv), "bar", t.GasPressure.StatusText, t.GasPressure.IsAlert);
-            DeltaP = new(t.EvaporatorDeltaP.Value.ToString("0", Inv), "Pa", t.EvaporatorDeltaP.StatusText, t.EvaporatorDeltaP.IsAlert);
+            var initial = await _telemetryHub.SubscribeAsync(new[] { _boardGuid });
+            var latest = initial.FirstOrDefault() ?? _telemetryHub.GetLatestTelemetry(_boardGuid);
 
-            HasAlert = Supply.IsAlert || ReturnTemp.IsAlert || Gas.IsAlert || DeltaP.IsAlert;
-            StatusLabel = $"{(HasAlert ? "Atenção" : "Normal")} ({t.OperationalPercent}%)";
-            NowLabel = $"Agora: {t.Supply.Value.ToString("0.0", Inv)}°C";
+            if (latest != null)
+            {
+                ApplyTelemetry(latest);
+            }
+            else
+            {
+                ApplyNoData();
+            }
 
-            TrendValues = await _deviceService.GetTemperatureTrendAsync(id, SelectedPeriod);
+            await LoadTrendAsync();
         }
-        finally { IsBusy = false; }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task CleanupAsync()
+    {
+        _telemetryHub.TelemetryUpdated -= OnTelemetryUpdated;
+        if (_boardGuid != Guid.Empty)
+        {
+            await _telemetryHub.UnsubscribeAsync(new[] { _boardGuid });
+        }
+    }
+
+    private void OnTelemetryUpdated(BoardTelemetryDto dto)
+    {
+        if (_boardGuid == Guid.Empty || dto.BoardId != _boardGuid)
+            return;
+
+        ApplyTelemetry(dto);
+        if (SelectedPeriod == TrendPeriod.OneHour)
+        {
+            TrendValues = _telemetryHub.GetTrendBuffer(_boardGuid);
+        }
+    }
+
+    private void ApplyNoData()
+    {
+        Supply = MetricViewData.Empty;
+        ReturnTemp = MetricViewData.Empty;
+        Gas = MetricViewData.Empty;
+        DeltaP = MetricViewData.Empty;
+        HasAlert = true;
+        StatusLabel = "Offline";
+        NowLabel = "Sem leitura";
+    }
+
+    private void ApplyTelemetry(BoardTelemetryDto t)
+    {
+        var caption = t.IsOnline ? "Ao vivo" : "Offline";
+        var isAlert = !t.IsOnline;
+
+        Supply = new($"{t.SupplyAirTemperature.ToString("0.0", Inv)}°C", "", caption, isAlert);
+        ReturnTemp = new($"{t.ReturnAirTemperature.ToString("0.0", Inv)}°C", "", caption, isAlert);
+        Gas = new($"{t.GasLineTemperature.ToString("0.0", Inv)}°C", "", caption, isAlert);
+        DeltaP = new(t.EvaporatorCoilPressureDrop.ToString("0", Inv), "Pa", caption, isAlert);
+
+        HasAlert = isAlert;
+        StatusLabel = t.IsOnline ? "Online" : "Offline";
+        NowLabel = FormatLastSeen(t.LastSeen);
+    }
+
+    private static string FormatLastSeen(DateTime? lastSeen)
+    {
+        if (!lastSeen.HasValue)
+            return "Sem leitura";
+
+        var diff = DateTime.UtcNow - lastSeen.Value.ToUniversalTime();
+        if (diff.TotalMinutes < 1)
+            return "Última leitura agora";
+        if (diff.TotalMinutes < 60)
+            return $"Última leitura há {(int)diff.TotalMinutes} min";
+        if (diff.TotalHours < 24)
+            return $"Última leitura há {(int)diff.TotalHours}h";
+        return $"Última leitura há {(int)diff.TotalDays}d";
+    }
+
+    private async Task LoadTrendAsync()
+    {
+        HistoryStatusText = string.Empty;
+        if (_boardGuid == Guid.Empty)
+        {
+            TrendValues = Array.Empty<double>();
+            return;
+        }
+
+        if (SelectedPeriod == TrendPeriod.OneHour)
+        {
+            TrendValues = _telemetryHub.GetTrendBuffer(_boardGuid);
+            return;
+        }
+
+        var hours = SelectedPeriod == TrendPeriod.TwelveHours ? 12 : 24;
+        var cutoff = DateTime.UtcNow.AddHours(-hours);
+
+        try
+        {
+            var now = DateTime.UtcNow;
+            var logs = (await _deviceService.GetBoardLogsAsync(_boardGuid, now.ToString("yyyy-MM"))).ToList();
+
+            if (cutoff.Month != now.Month)
+            {
+                var prevLogs = await _deviceService.GetBoardLogsAsync(_boardGuid, cutoff.ToString("yyyy-MM"));
+                logs.AddRange(prevLogs);
+            }
+
+            var points = logs
+                .Where(l => l.CreatedAt.HasValue && l.CreatedAt.Value.ToUniversalTime() >= cutoff)
+                .OrderBy(l => l.CreatedAt)
+                .Select(l => l.SupplyAirTemperature)
+                .ToList();
+
+            TrendValues = Downsample(points, 60);
+        }
+        catch (ApiException ex) when (ex.StatusCode is 401 or 403 or 404)
+        {
+            HistoryStatusText = "Histórico indisponível";
+            TrendValues = _telemetryHub.GetTrendBuffer(_boardGuid);
+        }
+        catch
+        {
+            HistoryStatusText = "Histórico indisponível";
+            TrendValues = _telemetryHub.GetTrendBuffer(_boardGuid);
+        }
+    }
+
+    private static IReadOnlyList<double> Downsample(IReadOnlyList<double> source, int maxPoints)
+    {
+        if (source.Count <= maxPoints)
+            return source;
+
+        var result = new List<double>(maxPoints);
+        var step = (double)(source.Count - 1) / (maxPoints - 1);
+        for (int i = 0; i < maxPoints; i++)
+        {
+            result.Add(source[(int)Math.Round(i * step)]);
+        }
+        return result;
     }
 
     [RelayCommand]
@@ -95,7 +240,7 @@ public partial class DeviceDetailViewModel : BaseViewModel
             "24h" => TrendPeriod.TwentyFourHours,
             _ => TrendPeriod.OneHour
         };
-        TrendValues = await _deviceService.GetTemperatureTrendAsync(DeviceId ?? "mock", SelectedPeriod);
+        await LoadTrendAsync();
     }
 
     [RelayCommand]
@@ -103,9 +248,9 @@ public partial class DeviceDetailViewModel : BaseViewModel
 
     [RelayCommand]
     private Task RequestMaintenanceAsync() =>
-        Shell.Current.DisplayAlert("Manutenção Preventiva", "Solicitação enviada (mock).", "OK"); // TODO: API
+        Shell.Current.DisplayAlertAsync("Manutenção Preventiva", "Em breve.", "OK");
 
     [RelayCommand]
     private Task DownloadReportAsync() =>
-        Shell.Current.DisplayAlert("Relatório PMOC", "Download disponível quando a API estiver pronta.", "OK"); // TODO: API
+        Shell.Current.DisplayAlertAsync("Relatório PMOC", "Em breve.", "OK");
 }

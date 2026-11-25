@@ -11,7 +11,7 @@
         <!-- ===== Header: voltar + título + avatar ===== -->
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8"
               Padding="24,0" BackgroundColor="{StaticResource Background}">
-            <ImageButton Source="chevron_left.svg" WidthRequest="44" HeightRequest="44"
+            <ImageButton Source="arrow_left.svg" WidthRequest="44" HeightRequest="44"
                          Padding="14" BackgroundColor="Transparent"
                          Command="{Binding BackCommand}"
                          SemanticProperties.Description="Voltar">
@@ -65,7 +65,7 @@
                                     </DataTrigger>
                                 </Border.Triggers>
                                 <HorizontalStackLayout Spacing="4">
-                                    <Image Source="circle_check.svg" WidthRequest="12" HeightRequest="12"
+                                    <Image Source="check_circle.svg" WidthRequest="12" HeightRequest="12"
                                            VerticalOptions="Center">
                                         <Image.Behaviors>
                                             <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSuccessContainer}" />
@@ -189,7 +189,7 @@
                             Value="{Binding ReturnTemp.Value}" Unit="{Binding ReturnTemp.Unit}"
                             Caption="{Binding ReturnTemp.Caption}" IsAlert="{Binding ReturnTemp.IsAlert}"
                             IconSource="thermometer.svg" TrendIconSource="minus.svg" />
-                        <controls:MetricCard Grid.Row="1" Grid.Column="0" Title="Pressão Gás"
+                        <controls:MetricCard Grid.Row="1" Grid.Column="0" Title="Temp. Linha Gás"
                             Value="{Binding Gas.Value}" Unit="{Binding Gas.Unit}"
                             Caption="{Binding Gas.Caption}" IsAlert="{Binding Gas.IsAlert}"
                             IconSource="gauge.svg" TrendIconSource="arrow_right.svg" />

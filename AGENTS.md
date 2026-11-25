@@ -72,3 +72,6 @@ Fontes estáticas Inter registradas via aliases:
 > **use sempre os estilos de Styles.xaml e os tokens de Colors.xaml; nunca coloque cores ou tamanhos fixos nas telas**.
 - Nunca use `Frame` (obsoleto); use sempre `Border`.
 - Não instale Tailwind ou bibliotecas web.
+
+## Regra de encerramento (toda tarefa)
+Reescreva (não anexe) docs/PROJECT_STATUS.md, em português e com no máximo ~150 linhas, com as seções: 1 Resumo; 2 Plano de integração (checklist das etapas 1-7 com [x]/[ ]); 3 Telas (tabela: tela | dados API/mock/parcial | status | observações); 4 Endpoints consumidos (endpoint | usado por | status); 5 Mocks e hardcodes restantes (arquivo:linha); 6 Decisões e desvios (Figma/API); 7 Bugs e pendências; 8 Resultado do build; 9 Próximo passo. Não crie outros arquivos de relatório.

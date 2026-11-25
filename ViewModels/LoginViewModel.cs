@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls;
 using Venther.App.Helpers;
+using Venther.App.Services.Api;
 using Venther.App.Services.Interfaces;
 
 namespace Venther.App.ViewModels;
@@ -111,17 +112,11 @@ public partial class LoginViewModel : BaseViewModel
             isValid = false;
         }
 
-        // Validação de Senha via Validators
+        // No login só exija e-mail válido e senha preenchida (sem validação de formato)
         if (string.IsNullOrWhiteSpace(Password))
         {
             HasPasswordError = true;
             PasswordErrorMessage = "Informe sua senha.";
-            isValid = false;
-        }
-        else if (!Validators.IsValidPassword(Password))
-        {
-            HasPasswordError = true;
-            PasswordErrorMessage = "Mínimo 8 caracteres, 1 maiúscula e 1 caractere especial.";
             isValid = false;
         }
 
@@ -136,24 +131,38 @@ public partial class LoginViewModel : BaseViewModel
         {
             IsBusy = true;
 
-            var success = await _authService.LoginAsync(Email, Password);
+            var loginResult = await _authService.LoginAsync(Email.Trim(), Password);
 
-            if (success)
+#if !DEBUG
+            if (!string.Equals(loginResult.User.Role, "Technician", StringComparison.OrdinalIgnoreCase))
             {
-                await Shell.Current.GoToAsync("//main/home");
+                await _authService.LogoutAsync();
+                HasCredentialError = true;
+                CredentialErrorMessage = "Este aplicativo é exclusivo para técnicos.";
+                return;
+            }
+#endif
+
+            await Shell.Current.GoToAsync("//main/home");
+        }
+        catch (ApiException ex)
+        {
+            HasCredentialError = true;
+            if (ex.StatusCode == 400 || ex.StatusCode == 401)
+            {
+                CredentialErrorMessage = "E-mail ou senha inválidos.";
             }
             else
             {
-                HasCredentialError = true;
-                CredentialErrorMessage = "E-mail ou senha incorretos. Verifique suas credenciais.";
-                HasEmailError = true;
-                HasPasswordError = true;
+                CredentialErrorMessage = ex.Message;
             }
+            HasEmailError = true;
+            HasPasswordError = true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             HasCredentialError = true;
-            CredentialErrorMessage = "Erro de conexão ao autenticar. Tente novamente.";
+            CredentialErrorMessage = ex.Message;
         }
         finally
         {

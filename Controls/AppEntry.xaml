@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="Venther.App.Controls.AppEntry"
              x:Name="This">
 
@@ -24,10 +25,24 @@
             <Border.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnBorderTapped" />
             </Border.GestureRecognizers>
-            <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+            <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="8" VerticalOptions="Center">
+                <!-- Leading Icon -->
+                <Image x:Name="LeadingIcon"
+                       Grid.Column="0"
+                       Source="{Binding LeadingIconSource, Source={x:Reference This}}"
+                       WidthRequest="18"
+                       HeightRequest="18"
+                       Aspect="AspectFit"
+                       VerticalOptions="Center"
+                       IsVisible="False">
+                    <Image.Behaviors>
+                        <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                    </Image.Behaviors>
+                </Image>
+
                 <!-- Text Entry -->
                 <Entry x:Name="InnerEntry"
-                       Grid.Column="0"
+                       Grid.Column="1"
                        Text="{Binding Text, Source={x:Reference This}, Mode=TwoWay}"
                        Placeholder="{Binding Placeholder, Source={x:Reference This}}"
                        PlaceholderColor="{StaticResource AuthMuted}"
@@ -38,7 +53,7 @@
 
                 <!-- Password Toggle Button -->
                 <Border x:Name="PasswordToggleBorder"
-                        Grid.Column="1"
+                        Grid.Column="2"
                         IsVisible="False"
                         WidthRequest="36"
                         HeightRequest="36"

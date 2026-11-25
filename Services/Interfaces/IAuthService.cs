@@ -1,12 +1,14 @@
 using System.Threading.Tasks;
+using Venther.App.Services.Api.Dtos;
 
 namespace Venther.App.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task<bool> LoginAsync(string email, string password);
+    Task<LoginResponseDto> LoginAsync(string email, string password);
     Task LogoutAsync();
-    Task<bool> SendPasswordResetEmailAsync(string email);
-    Task<bool> ResetPasswordAsync(string token, string newPassword);
-    Task<bool> IsAuthenticatedAsync();
+    Task ForgotPasswordAsync(string email);
+    Task ResetPasswordAsync(string email, string code, string password, string confirmPassword);
+    bool IsAuthenticated { get; }
+    UserDto? CurrentUser { get; }
 }

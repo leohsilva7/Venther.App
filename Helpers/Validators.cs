@@ -5,7 +5,10 @@ namespace Venther.App.Helpers;
 
 public static partial class Validators
 {
-    private static readonly Regex PasswordRegex = new(@"^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$", RegexOptions.Compiled);
+    // API: 8 a 100 caracteres, com maiúscula, minúscula, número e caractere especial.
+    private static readonly Regex PasswordRegex = new(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,100}$",
+        RegexOptions.Compiled);
 
     public static bool IsValidEmail(string? email)
     {
