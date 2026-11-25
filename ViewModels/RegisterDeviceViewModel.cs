@@ -1,11 +1,16 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Org.Apache.Http.Client.Params;
-using System.Collections.ObjectModel;
+using Microsoft.Maui.Controls;
+using Venther.App.Helpers;
 
 namespace Venther.App.ViewModels;
 
-public partial class RegisterDeviceViewModel : ObservableObject
+public partial class RegisterDeviceViewModel : BaseViewModel
 {
     private readonly List<string> _allClients =
     [
@@ -35,6 +40,7 @@ public partial class RegisterDeviceViewModel : ObservableObject
 
     public RegisterDeviceViewModel()
     {
+        Title = "Cadastrar Dispositivo";
         FilterClients(string.Empty);
     }
 
@@ -47,9 +53,10 @@ public partial class RegisterDeviceViewModel : ObservableObject
     {
         SuggestedClients.Clear();
 
-        var filtered = string.IsNullOrWhiteSpace(query)
+        var trimmed = query?.Trim() ?? string.Empty;
+        var filtered = string.IsNullOrWhiteSpace(trimmed)
             ? _allClients.Take(4)
-            : _allClients.Where(c => c.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase));
+            : _allClients.Where(c => c.Contains(trimmed, StringComparison.OrdinalIgnoreCase));
 
         foreach (var client in filtered)
         {
@@ -69,14 +76,16 @@ public partial class RegisterDeviceViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanProceed))]
     private async Task AdvanceAsync()
     {
-        // Navega para DeviceConnectionPage passando os dados preenchidos
+        if (!CanProceed)
+            return;
+
         var navigationParams = new Dictionary<string, object>
         {
-            { "ClientName", ClientName.Trim() },
-            { "InstallationLocation", InstallationLocation.Trim() }
+            ["ClientName"] = ClientName.Trim(),
+            ["InstallationLocation"] = InstallationLocation.Trim()
         };
 
-        await Shell.Current.GoToAsync("DeviceConnectionPage", navigationParams);
+        await Shell.Current.GoToAsync(Routes.DeviceConnection, navigationParams);
     }
 
     [RelayCommand]

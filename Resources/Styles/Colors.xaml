@@ -21,4 +21,9 @@
     <Color x:Key="ErrorBorder">#FECACA</Color>
     <Color x:Key="LogoBlue">#034899</Color>
     <Color x:Key="White">#FFFFFF</Color>
+    <Color x:Key="Success">#10B981</Color>
+    <Color x:Key="SuccessContainer">#D1FAE5</Color>
+    <Color x:Key="OnSuccessContainer">#065F46</Color>
+    <Color x:Key="SuccessText">#059669</Color>
+    <Color x:Key="OnAccent">#511A00</Color>
 </ResourceDictionary>

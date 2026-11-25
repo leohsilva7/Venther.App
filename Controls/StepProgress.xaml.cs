@@ -1,13 +1,24 @@
+using System;
+using Microsoft.Maui.Controls;
+
 namespace Venther.App.Controls;
 
 public partial class StepProgress : ContentView
 {
     public static readonly BindableProperty CurrentStepProperty =
-        BindableProperty.Create(nameof(CurrentStep), typeof(int), typeof(StepProgress), 1,
+        BindableProperty.Create(
+            nameof(CurrentStep),
+            typeof(int),
+            typeof(StepProgress),
+            1,
             propertyChanged: OnStepChanged);
 
     public static readonly BindableProperty TotalStepsProperty =
-        BindableProperty.Create(nameof(TotalSteps), typeof(int), typeof(StepProgress), 3,
+        BindableProperty.Create(
+            nameof(TotalSteps),
+            typeof(int),
+            typeof(StepProgress),
+            3,
             propertyChanged: OnStepChanged);
 
     public int CurrentStep

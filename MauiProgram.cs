@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Venther.App.Services.Interfaces;
 using Venther.App.Services.Mocks;
@@ -42,6 +42,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IDeviceService, MockDeviceService>();
         builder.Services.AddSingleton<IWorkOrderService, MockWorkOrderService>();
         builder.Services.AddSingleton<IAlertService, MockAlertService>();
+        builder.Services.AddSingleton<IDeviceProvisioningService, MockDeviceProvisioningService>();
 
         // ViewModels & Pages (Transient)
         builder.Services.AddTransient<LoginPage>();

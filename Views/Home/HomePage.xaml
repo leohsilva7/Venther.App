@@ -100,7 +100,7 @@
                                         <BoxView WidthRequest="6"
                                                  HeightRequest="6"
                                                  CornerRadius="3"
-                                                 Color="#16A34A"
+                                                 Color="{StaticResource Success}"
                                                  VerticalOptions="Center" />
                                         <Label Text="{Binding NormalCount}"
                                                FontFamily="InterBold"

@@ -11,7 +11,7 @@
         <!-- ===== Header: voltar + título + avatar ===== -->
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8"
               Padding="24,0" BackgroundColor="{StaticResource Background}">
-            <ImageButton Source="chevron_left.svg" WidthRequest="44" HeightRequest="44"
+            <ImageButton Source="arrow_left.svg" WidthRequest="44" HeightRequest="44"
                          Padding="14" BackgroundColor="Transparent"
                          Command="{Binding BackCommand}"
                          SemanticProperties.Description="Voltar">
@@ -65,7 +65,7 @@
                                     </DataTrigger>
                                 </Border.Triggers>
                                 <HorizontalStackLayout Spacing="4">
-                                    <Image Source="circle_check.svg" WidthRequest="12" HeightRequest="12"
+                                    <Image Source="check_circle.svg" WidthRequest="12" HeightRequest="12"
                                            VerticalOptions="Center">
                                         <Image.Behaviors>
                                             <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSuccessContainer}" />

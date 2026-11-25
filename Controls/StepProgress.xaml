@@ -2,35 +2,35 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Venther.App.Controls.StepProgress"
-             x:Name="this">
+             x:Name="This">
+
     <VerticalStackLayout Spacing="8">
-        <Grid ColumnDefinitions="*,Auto">
+        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
             <Label Grid.Column="0"
-                   Text="{Binding StepText, Source={x:Reference this}}"
-                   FontFamily="InterSemiBold"
-                   FontSize="12"
-                   TextColor="{StaticResource TextSecondary}"
+                   Text="{Binding StepText, Source={x:Reference This}}"
+                   Style="{StaticResource Overline}"
+                   TextColor="{StaticResource OnSurfaceVariant}"
                    VerticalOptions="Center" />
 
             <Label Grid.Column="1"
-                   Text="{Binding PercentageText, Source={x:Reference this}}"
+                   Text="{Binding PercentageText, Source={x:Reference This}}"
                    FontFamily="InterBold"
                    FontSize="12"
-                   TextColor="{StaticResource BrandPrimary}"
+                   TextColor="{StaticResource Primary}"
                    VerticalOptions="Center" />
         </Grid>
 
         <!-- Barra de Progresso -->
         <Border HeightRequest="6"
                 StrokeThickness="0"
-                BackgroundColor="{StaticResource BorderDefault}"
+                BackgroundColor="{StaticResource SurfaceVariant}"
                 Padding="0">
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="3" />
             </Border.StrokeShape>
 
-            <ProgressBar Progress="{Binding ProgressValue, Source={x:Reference this}}"
-                         ProgressColor="{StaticResource BrandPrimary}"
+            <ProgressBar Progress="{Binding ProgressValue, Source={x:Reference This}}"
+                         ProgressColor="{StaticResource Primary}"
                          BackgroundColor="Transparent"
                          HeightRequest="6" />
         </Border>

@@ -21,14 +21,13 @@
         Shell.TabBarIsVisible="False" />
 
     <TabBar Route="main">
-        <!-- TODO: Substituir ícones de abas pelos SVGs Lucide (Home, Bell/Alert, ClipboardList/Wrench) -->
-        <Tab Title="Início" Route="home" Icon="dotnet_bot.png">
+        <Tab Title="Início" Route="home" Icon="house.svg">
             <ShellContent ContentTemplate="{DataTemplate home:HomePage}" />
         </Tab>
-        <Tab Title="Alertas" Route="alerts" Icon="dotnet_bot.png">
+        <Tab Title="Alertas" Route="alerts" Icon="alert_triangle.svg">
             <ShellContent ContentTemplate="{DataTemplate alerts:AlertsPage}" />
         </Tab>
-        <Tab Title="Chamados" Route="workorders" Icon="dotnet_bot.png">
+        <Tab Title="Chamados" Route="workorders" Icon="wrench.svg">
             <ShellContent ContentTemplate="{DataTemplate workorders:WorkOrdersPage}" />
         </Tab>
     </TabBar>

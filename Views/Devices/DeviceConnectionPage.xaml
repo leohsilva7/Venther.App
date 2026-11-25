@@ -1,14 +1,317 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:Venther.App.Controls"
              xmlns:vm="clr-namespace:Venther.App.ViewModels"
              x:Class="Venther.App.Views.Devices.DeviceConnectionPage"
              x:DataType="vm:DeviceConnectionViewModel"
-             Title="Conexão do Dispositivo">
-    <Grid>
-        <Label Text="Conexão do Dispositivo"
-               Style="{StaticResource Heading}"
-               HorizontalOptions="Center"
-               VerticalOptions="Center" />
+             BackgroundColor="{StaticResource Background}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto, *, Auto"
+          Padding="20, 16, 20, 24"
+          RowSpacing="16">
+
+        <!-- Row 0: Header + StepProgress + Hardware Pill -->
+        <VerticalStackLayout Grid.Row="0" Spacing="16">
+            <!-- Header bar with back button -->
+            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
+                <Border Grid.Column="0"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Stroke="{StaticResource AuthBorder}"
+                        BackgroundColor="{StaticResource White}"
+                        VerticalOptions="Center">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.04" Offset="0, 1" Radius="2" />
+                    </Border.Shadow>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoBackCommand}" />
+                    </Border.GestureRecognizers>
+                    <Image Source="arrow_left.svg"
+                           WidthRequest="18"
+                           HeightRequest="18"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center">
+                        <Image.Behaviors>
+                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurface}" />
+                        </Image.Behaviors>
+                    </Image>
+                </Border>
+
+                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                    <Label Text="Conectar Dispositivo"
+                           FontFamily="InterSemiBold"
+                           FontSize="20"
+                           TextColor="{StaticResource OnSurface}" />
+                    <Label Text="Configuração de conectividade Wi-Fi"
+                           Style="{StaticResource BodySmall}"
+                           TextColor="{StaticResource OnSurfaceVariant}" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- StepProgress Control with Hardware Pill -->
+            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12" VerticalOptions="Center">
+                <controls:StepProgress Grid.Column="0" CurrentStep="2" TotalSteps="3" />
+
+                <!-- Hardware Identifier Pill -->
+                <Border Grid.Column="1"
+                        BackgroundColor="{StaticResource SurfaceVariant}"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="0"
+                        Padding="10, 6"
+                        VerticalOptions="End">
+                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                        <Image Source="cpu.svg"
+                               WidthRequest="14"
+                               HeightRequest="14"
+                               Aspect="AspectFit"
+                               VerticalOptions="Center">
+                            <Image.Behaviors>
+                                <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                            </Image.Behaviors>
+                        </Image>
+                        <Label Text="{Binding HardwareId}"
+                               FontFamily="InterSemiBold"
+                               FontSize="11"
+                               TextColor="{StaticResource Primary}"
+                               VerticalOptions="Center" />
+                        <BoxView WidthRequest="6"
+                                 HeightRequest="6"
+                                 CornerRadius="3"
+                                 Color="{StaticResource Success}"
+                                 VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+            </Grid>
+        </VerticalStackLayout>
+
+        <!-- Row 1: Scrollable Content -->
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Spacing="16">
+
+                <!-- Seção 1: Rede Wi-Fi -->
+                <Border BackgroundColor="{StaticResource White}"
+                        Stroke="{StaticResource AuthBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="20">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.04" Offset="0, 2" Radius="4" />
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="16">
+                        <Label Text="Rede Wi-Fi"
+                               FontFamily="InterSemiBold"
+                               FontSize="16"
+                               TextColor="{StaticResource AuthText}" />
+
+                        <!-- Selected Wi-Fi Card -->
+                        <Border BackgroundColor="{StaticResource Surface}"
+                                Stroke="{StaticResource AuthBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="14">
+                            <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
+                                <!-- Wi-Fi Icon in circle -->
+                                <Border Grid.Column="0"
+                                        WidthRequest="38"
+                                        HeightRequest="38"
+                                        StrokeShape="RoundRectangle 19"
+                                        StrokeThickness="0"
+                                        BackgroundColor="{StaticResource White}"
+                                        VerticalOptions="Center"
+                                        HorizontalOptions="Center">
+                                    <Image Source="wifi.svg"
+                                           WidthRequest="18"
+                                           HeightRequest="18"
+                                           Aspect="AspectFit"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center">
+                                        <Image.Behaviors>
+                                            <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                                        </Image.Behaviors>
+                                    </Image>
+                                </Border>
+
+                                <!-- SSID and Channel -->
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                    <Label Text="{Binding WifiSsid}"
+                                           FontFamily="InterSemiBold"
+                                           FontSize="14"
+                                           TextColor="{StaticResource OnSurface}" />
+                                    <Label Text="{Binding WifiChannel}"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource OnSurfaceVariant}" />
+                                </VerticalStackLayout>
+
+                                <!-- Connected status badge -->
+                                <Border Grid.Column="2"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 6"
+                                        BackgroundColor="{StaticResource SuccessContainer}"
+                                        Padding="8, 3"
+                                        VerticalOptions="Center">
+                                    <Label Text="Disponível"
+                                           FontFamily="InterMedium"
+                                           FontSize="11"
+                                           TextColor="{StaticResource OnSuccessContainer}"
+                                           VerticalOptions="Center" />
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- Wi-Fi Password Input -->
+                        <controls:AppEntry Label="Senha da Rede"
+                                           Placeholder="Digite a senha do Wi-Fi"
+                                           Text="{Binding WifiPassword, Mode=TwoWay}"
+                                           IsPassword="True"
+                                           ReturnType="Done" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Seção 2: Vínculo de Equipamento -->
+                <Border BackgroundColor="{StaticResource White}"
+                        Stroke="{StaticResource AuthBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="20">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.04" Offset="0, 2" Radius="4" />
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="Vínculo de Equipamento"
+                               FontFamily="InterSemiBold"
+                               FontSize="16"
+                               TextColor="{StaticResource AuthText}" />
+
+                        <!-- Equipment / Location Row -->
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="10" VerticalOptions="Center">
+                            <Image Grid.Column="0"
+                                   Source="map_pin.svg"
+                                   WidthRequest="16"
+                                   HeightRequest="16"
+                                   Aspect="AspectFit"
+                                   VerticalOptions="Center">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                                </Image.Behaviors>
+                            </Image>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                                <Label Text="Localização / Apelido"
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{StaticResource OnSurfaceVariant}" />
+                                <Label Text="{Binding InstallationLocation}"
+                                       FontFamily="InterMedium"
+                                       FontSize="13"
+                                       TextColor="{StaticResource OnSurface}" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="{StaticResource AuthBorder}" />
+
+                        <!-- Client Row -->
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="10" VerticalOptions="Center">
+                            <Image Grid.Column="0"
+                                   Source="user.svg"
+                                   WidthRequest="16"
+                                   HeightRequest="16"
+                                   Aspect="AspectFit"
+                                   VerticalOptions="Center">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                                </Image.Behaviors>
+                            </Image>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                                <Label Text="Cliente Atribuído"
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{StaticResource OnSurfaceVariant}" />
+                                <Label Text="{Binding ClientName}"
+                                       FontFamily="InterMedium"
+                                       FontSize="13"
+                                       TextColor="{StaticResource OnSurface}" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="{StaticResource AuthBorder}" />
+
+                        <!-- Hardware / MAC Row -->
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="10" VerticalOptions="Center">
+                            <Image Grid.Column="0"
+                                   Source="cpu.svg"
+                                   WidthRequest="16"
+                                   HeightRequest="16"
+                                   Aspect="AspectFit"
+                                   VerticalOptions="Center">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                                </Image.Behaviors>
+                            </Image>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                                <Label Text="Endereço Físico (MAC)"
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{StaticResource OnSurfaceVariant}" />
+                                <Label Text="{Binding MacAddress}"
+                                       FontFamily="InterMedium"
+                                       FontSize="13"
+                                       TextColor="{StaticResource OnSurface}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Row 2: Bottom Action + Security Certification Footer -->
+        <VerticalStackLayout Grid.Row="2" Spacing="12">
+            <!-- Orange Main Action Button (Accent) -->
+            <Button Text="Testar e Provisionar Dispositivo"
+                    Command="{Binding ProvisionCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
+                    BackgroundColor="{StaticResource Accent}"
+                    TextColor="{StaticResource White}"
+                    FontFamily="InterMedium"
+                    FontSize="14"
+                    HeightRequest="48"
+                    CornerRadius="12">
+                <Button.Shadow>
+                    <Shadow Brush="{StaticResource Accent}" Opacity="0.25" Offset="0, 3" Radius="6" />
+                </Button.Shadow>
+            </Button>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="{StaticResource Accent}"
+                               HeightRequest="24"
+                               HorizontalOptions="Center" />
+
+            <!-- Security Certification Footer -->
+            <HorizontalStackLayout Spacing="6"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center">
+                <Image Source="shield_check.svg"
+                       WidthRequest="14"
+                       HeightRequest="14"
+                       Aspect="AspectFit"
+                       VerticalOptions="Center">
+                    <Image.Behaviors>
+                        <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                    </Image.Behaviors>
+                </Image>
+                <Label Text="Criptografia AES-256 e TLS 1.3 de ponta a ponta"
+                       Style="{StaticResource Caption}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+
     </Grid>
+
 </ContentPage>

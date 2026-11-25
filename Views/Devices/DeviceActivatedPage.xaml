@@ -1,14 +1,306 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:Venther.App.Controls"
              xmlns:vm="clr-namespace:Venther.App.ViewModels"
              x:Class="Venther.App.Views.Devices.DeviceActivatedPage"
              x:DataType="vm:DeviceActivatedViewModel"
-             Title="Dispositivo Ativado">
-    <Grid>
-        <Label Text="Dispositivo Ativado"
-               Style="{StaticResource Heading}"
-               HorizontalOptions="Center"
-               VerticalOptions="Center" />
+             BackgroundColor="{StaticResource Background}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto, *, Auto"
+          Padding="20, 16, 20, 24"
+          RowSpacing="16">
+
+        <!-- Row 0: Header com voltar, título e opções + Progresso Concluído -->
+        <VerticalStackLayout Grid.Row="0" Spacing="16">
+            <!-- Header bar -->
+            <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
+                <!-- Back Button -->
+                <Border Grid.Column="0"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Stroke="{StaticResource AuthBorder}"
+                        BackgroundColor="{StaticResource White}"
+                        VerticalOptions="Center">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.04" Offset="0, 1" Radius="2" />
+                    </Border.Shadow>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoBackCommand}" />
+                    </Border.GestureRecognizers>
+                    <Image Source="arrow_left.svg"
+                           WidthRequest="18"
+                           HeightRequest="18"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center">
+                        <Image.Behaviors>
+                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurface}" />
+                        </Image.Behaviors>
+                    </Image>
+                </Border>
+
+                <!-- Screen Title -->
+                <Label Grid.Column="1"
+                       Text="Ativação Concluída"
+                       FontFamily="InterSemiBold"
+                       FontSize="18"
+                       TextColor="{StaticResource OnSurface}"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center" />
+
+                <!-- Options Button -->
+                <Border Grid.Column="2"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Stroke="{StaticResource AuthBorder}"
+                        BackgroundColor="{StaticResource White}"
+                        VerticalOptions="Center">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.04" Offset="0, 1" Radius="2" />
+                    </Border.Shadow>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding MoreOptionsCommand}" />
+                    </Border.GestureRecognizers>
+                    <Image Source="more_vertical.svg"
+                           WidthRequest="18"
+                           HeightRequest="18"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center">
+                        <Image.Behaviors>
+                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurface}" />
+                        </Image.Behaviors>
+                    </Image>
+                </Border>
+            </Grid>
+
+            <!-- Cabeçalho de progresso concluído -->
+            <controls:StepProgress CurrentStep="3" TotalSteps="3" />
+        </VerticalStackLayout>
+
+        <!-- Row 1: Scrollable Content -->
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Spacing="16">
+
+                <!-- Hero Card de Sucesso -->
+                <Border BackgroundColor="{StaticResource White}"
+                        Stroke="{StaticResource AuthBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="0">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.06" Offset="0, 3" Radius="8" />
+                    </Border.Shadow>
+
+                    <Grid IsClippedToBounds="True">
+                        <!-- Círculos decorativos de fundo feitos com Border -->
+                        <Border WidthRequest="180"
+                                HeightRequest="180"
+                                StrokeShape="RoundRectangle 90"
+                                BackgroundColor="{StaticResource SuccessContainer}"
+                                Opacity="0.45"
+                                StrokeThickness="0"
+                                HorizontalOptions="End"
+                                VerticalOptions="Start"
+                                Margin="0, -40, -40, 0" />
+
+                        <Border WidthRequest="130"
+                                HeightRequest="130"
+                                StrokeShape="RoundRectangle 65"
+                                BackgroundColor="{StaticResource SurfaceVariant}"
+                                Opacity="0.4"
+                                StrokeThickness="0"
+                                HorizontalOptions="Start"
+                                VerticalOptions="End"
+                                Margin="-30, 0, 0, -30" />
+
+                        <!-- Conteúdo Principal do Hero Card -->
+                        <VerticalStackLayout Padding="24, 28" Spacing="12" HorizontalOptions="Fill">
+                            <!-- Ícone grande com sombra -->
+                            <Border WidthRequest="72"
+                                    HeightRequest="72"
+                                    StrokeShape="RoundRectangle 36"
+                                    BackgroundColor="{StaticResource SuccessContainer}"
+                                    StrokeThickness="0"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center">
+                                <Border.Shadow>
+                                    <Shadow Brush="{StaticResource Success}" Opacity="0.25" Offset="0, 4" Radius="12" />
+                                </Border.Shadow>
+                                <Image Source="check_circle.svg"
+                                       WidthRequest="36"
+                                       HeightRequest="36"
+                                       Aspect="AspectFit"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center">
+                                    <Image.Behaviors>
+                                        <toolkit:IconTintColorBehavior TintColor="{StaticResource Success}" />
+                                    </Image.Behaviors>
+                                </Image>
+                            </Border>
+
+                            <!-- Selo de Status -->
+                            <Border BackgroundColor="{StaticResource SuccessContainer}"
+                                    StrokeShape="RoundRectangle 8"
+                                    StrokeThickness="0"
+                                    Padding="10, 4"
+                                    HorizontalOptions="Center">
+                                <Label Text="DISPOSITIVO ATIVO E SINCRONIZADO"
+                                       Style="{StaticResource Overline}"
+                                       TextColor="{StaticResource OnSuccessContainer}" />
+                            </Border>
+
+                            <!-- Título de Sucesso -->
+                            <Label Text="Dispositivo Ativado com Sucesso!"
+                                   FontFamily="InterBold"
+                                   FontSize="20"
+                                   TextColor="{StaticResource OnSurface}"
+                                   HorizontalTextAlignment="Center"
+                                   Margin="0, 4, 0, 0" />
+
+                            <!-- Subtítulo -->
+                            <Label Text="O hardware foi vinculado e os dados de telemetria já estão sendo sincronizados com a nuvem."
+                                   Style="{StaticResource BodySmall}"
+                                   TextColor="{StaticResource OnSurfaceVariant}"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- Card de Resumo do Dispositivo com Tabela de Telemetria (3 Linhas com Divisor) -->
+                <Border BackgroundColor="{StaticResource White}"
+                        Stroke="{StaticResource AuthBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="20">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.04" Offset="0, 2" Radius="4" />
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="Resumo do Dispositivo"
+                               FontFamily="InterSemiBold"
+                               FontSize="15"
+                               TextColor="{StaticResource AuthText}" />
+
+                        <!-- Linha 1: Equipamento / Local & Hardware ID -->
+                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                                <Label Text="Equipamento / Local"
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{StaticResource OnSurfaceVariant}" />
+                                <Label Text="{Binding InstallationLocation}"
+                                       FontFamily="InterMedium"
+                                       FontSize="13"
+                                       TextColor="{StaticResource OnSurface}" />
+                            </VerticalStackLayout>
+
+                            <Border Grid.Column="1"
+                                    BackgroundColor="{StaticResource SurfaceVariant}"
+                                    StrokeShape="RoundRectangle 6"
+                                    StrokeThickness="0"
+                                    Padding="8, 3"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding HardwareId}"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="11"
+                                       TextColor="{StaticResource Primary}" />
+                            </Border>
+                        </Grid>
+
+                        <!-- Divisor 1 -->
+                        <BoxView HeightRequest="1" Color="{StaticResource AuthBorder}" />
+
+                        <!-- Linha 2: Cliente Atribuído & Rede Wi-Fi -->
+                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                                <Label Text="Cliente Atribuído"
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{StaticResource OnSurfaceVariant}" />
+                                <Label Text="{Binding ClientName}"
+                                       FontFamily="InterMedium"
+                                       FontSize="13"
+                                       TextColor="{StaticResource OnSurface}" />
+                            </VerticalStackLayout>
+
+                            <HorizontalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                <Image Source="wifi.svg"
+                                       WidthRequest="13"
+                                       HeightRequest="13"
+                                       Aspect="AspectFit"
+                                       VerticalOptions="Center">
+                                    <Image.Behaviors>
+                                        <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                                    </Image.Behaviors>
+                                </Image>
+                                <Label Text="{Binding WifiSsid}"
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{StaticResource OnSurfaceVariant}"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </Grid>
+
+                        <!-- Divisor 2 -->
+                        <BoxView HeightRequest="1" Color="{StaticResource AuthBorder}" />
+
+                        <!-- Linha 3: Telemetria Inicial & Status do Sinal -->
+                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                                <Label Text="Telemetria Inicial"
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{StaticResource OnSurfaceVariant}" />
+                                <Label Text="{Binding InitialReading}"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="13"
+                                       TextColor="{StaticResource Primary}" />
+                            </VerticalStackLayout>
+
+                            <HorizontalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                <BoxView WidthRequest="6"
+                                         HeightRequest="6"
+                                         CornerRadius="3"
+                                         Color="{StaticResource Success}"
+                                         VerticalOptions="Center" />
+                                <Label Text="{Binding SignalStrength}"
+                                       FontFamily="InterMedium"
+                                       FontSize="11"
+                                       TextColor="{StaticResource OnSuccessContainer}"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Row 2: Botão Principal & Botão Secundário -->
+        <VerticalStackLayout Grid.Row="2" Spacing="10">
+            <!-- Botão Principal: Volta para a aba Início -->
+            <Button Text="Ir para o Início"
+                    Command="{Binding GoHomeCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    HeightRequest="48"
+                    CornerRadius="12" />
+
+            <!-- Botão Secundário: Cadastrar outro Dispositivo -->
+            <Button Text="Cadastrar outro Dispositivo"
+                    Command="{Binding RegisterAnotherDeviceCommand}"
+                    BackgroundColor="{StaticResource SurfaceVariant}"
+                    TextColor="{StaticResource Primary}"
+                    FontFamily="InterMedium"
+                    FontSize="14"
+                    HeightRequest="48"
+                    CornerRadius="12" />
+        </VerticalStackLayout>
+
     </Grid>
+
 </ContentPage>

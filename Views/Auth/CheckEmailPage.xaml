@@ -1,14 +1,162 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:Venther.App.ViewModels"
              x:Class="Venther.App.Views.Auth.CheckEmailPage"
              x:DataType="vm:CheckEmailViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}"
              Title="Verificar E-mail">
-    <Grid>
-        <Label Text="Verificar E-mail"
-               Style="{StaticResource Heading}"
-               HorizontalOptions="Center"
-               VerticalOptions="Center" />
-    </Grid>
+
+    <ScrollView>
+        <Grid RowDefinitions="*, Auto, *"
+              Padding="24, 32"
+              MinimumHeightRequest="600">
+
+            <VerticalStackLayout Grid.Row="1"
+                                 Spacing="24"
+                                 MaximumWidthRequest="420"
+                                 HorizontalOptions="Fill">
+
+                <!-- Logo & Branding Header -->
+                <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                    <Border WidthRequest="64"
+                            HeightRequest="64"
+                            StrokeShape="RoundRectangle 16"
+                            StrokeThickness="0"
+                            BackgroundColor="{StaticResource Surface}"
+                            HorizontalOptions="Center"
+                            Margin="0, 0, 0, 8">
+                        <Image Source="logoventher.png"
+                               WidthRequest="36"
+                               HeightRequest="36"
+                               Aspect="AspectFit"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
+
+                    <Label Text="VENTHER"
+                           FontFamily="InterBold"
+                           FontSize="20"
+                           CharacterSpacing="1.2"
+                           TextColor="{StaticResource LogoBlue}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- Auth Card -->
+                <Border Style="{StaticResource AuthCard}">
+                    <VerticalStackLayout Spacing="20">
+
+                        <!-- Símbolo de etapa (ícone mail em círculo de 48) -->
+                        <Border WidthRequest="48"
+                                HeightRequest="48"
+                                StrokeShape="RoundRectangle 24"
+                                StrokeThickness="0"
+                                BackgroundColor="{StaticResource Surface}"
+                                HorizontalOptions="Center">
+                            <Image Source="mail.svg"
+                                   WidthRequest="22"
+                                   HeightRequest="22"
+                                   Aspect="AspectFit"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                                </Image.Behaviors>
+                            </Image>
+                        </Border>
+
+                        <!-- Título e Subtítulo -->
+                        <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                            <Label Text="Verifique seu e-mail"
+                                   Style="{StaticResource TitleAuth}"
+                                   FontSize="22"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center" />
+
+                            <Label Text="Enviamos as instruções e o link de recuperação para o endereço informado."
+                                   Style="{StaticResource BodySmall}"
+                                   TextColor="{StaticResource AuthMuted}"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+
+                        <!-- Card de Destino e Validade -->
+                        <Border BackgroundColor="{StaticResource Surface}"
+                                Stroke="{StaticResource AuthBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="16, 14">
+                            <VerticalStackLayout Spacing="10">
+                                <!-- Destino / E-mail -->
+                                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                    <Image Source="mail.svg"
+                                           WidthRequest="16"
+                                           HeightRequest="16"
+                                           VerticalOptions="Center">
+                                        <Image.Behaviors>
+                                            <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="{Binding Email}"
+                                           FontFamily="InterMedium"
+                                           FontSize="13"
+                                           TextColor="{StaticResource AuthText}"
+                                           LineBreakMode="TailTruncation"
+                                           VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+
+                                <BoxView HeightRequest="1"
+                                         Color="{StaticResource AuthBorder}"
+                                         HorizontalOptions="Fill" />
+
+                                <!-- Validade -->
+                                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                    <Image Source="clock.svg"
+                                           WidthRequest="16"
+                                           HeightRequest="16"
+                                           VerticalOptions="Center">
+                                        <Image.Behaviors>
+                                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Link válido por 30 minutos"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource OnSurfaceVariant}"
+                                           VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Orientação -->
+                        <Label Text="Não recebeu? Verifique também a pasta de spam ou lixo eletrônico da sua caixa de entrada."
+                               Style="{StaticResource BodySmall}"
+                               TextColor="{StaticResource AuthMuted}"
+                               HorizontalTextAlignment="Center"
+                               HorizontalOptions="Center" />
+
+                        <!-- Ações -->
+                        <VerticalStackLayout Spacing="12">
+                            <!-- Botão Principal (Avançar / Abrir app de e-mail / Redefinir senha) -->
+                            <Button Style="{StaticResource PrimaryButton}"
+                                    Text="Continuar para redefinição"
+                                    Command="{Binding OpenEmailAppCommand}"
+                                    IsEnabled="{Binding IsNotBusy}"
+                                    HorizontalOptions="Fill" />
+
+                            <!-- Botão Secundário / Voltar -->
+                            <Button Style="{StaticResource LinkButton}"
+                                    Text="Voltar para o login"
+                                    Command="{Binding GoBackCommand}"
+                                    IsEnabled="{Binding IsNotBusy}"
+                                    HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
 </ContentPage>

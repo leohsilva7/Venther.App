@@ -72,6 +72,20 @@ public partial class AppEntry : ContentView
             string.Empty,
             propertyChanged: (b, _, _) => ((AppEntry)b).UpdateVisualState());
 
+    public static readonly BindableProperty LeadingIconSourceProperty =
+        BindableProperty.Create(
+            nameof(LeadingIconSource),
+            typeof(ImageSource),
+            typeof(AppEntry),
+            default(ImageSource),
+            propertyChanged: (b, _, n) => ((AppEntry)b).OnLeadingIconSourceChanged((ImageSource?)n));
+
+    public ImageSource? LeadingIconSource
+    {
+        get => (ImageSource?)GetValue(LeadingIconSourceProperty);
+        set => SetValue(LeadingIconSourceProperty, value);
+    }
+
     public string? Text
     {
         get => (string?)GetValue(TextProperty);
@@ -150,6 +164,11 @@ public partial class AppEntry : ContentView
     private void OnLabelChanged(string newLabel)
     {
         FieldLabel.IsVisible = !string.IsNullOrWhiteSpace(newLabel);
+    }
+
+    private void OnLeadingIconSourceChanged(ImageSource? newSource)
+    {
+        LeadingIcon.IsVisible = newSource != null;
     }
 
     private void OnIsPasswordChanged(bool isPassword)
