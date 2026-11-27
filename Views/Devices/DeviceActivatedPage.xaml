@@ -10,61 +10,24 @@
              Shell.NavBarIsVisible="False">
 
     <Grid RowDefinitions="Auto, *, Auto"
-          Padding="20, 16, 20, 24"
+          Padding="0, 0, 0, 24"
           RowSpacing="16">
 
-        <!-- Row 0: Header com voltar, título e opções + Progresso Concluído -->
-        <VerticalStackLayout Grid.Row="0" Spacing="16">
-            <!-- Header bar -->
-            <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
-                <!-- Back Button -->
-                <Border Grid.Column="0"
-                        WidthRequest="40"
+        <!-- Row 0: Header com voltar, título, mais opções no RightActionContent + Progresso Concluído no BottomContent -->
+        <controls:AppHeader Grid.Row="0"
+                            Title="Ativação Concluída"
+                            ShowBackButton="True"
+                            BackCommand="{Binding GoBackCommand}"
+                            ShowBellButton="False">
+            <controls:AppHeader.RightActionContent>
+                <Border WidthRequest="40"
                         HeightRequest="40"
-                        StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1"
-                        Stroke="{StaticResource AuthBorder}"
-                        BackgroundColor="{StaticResource White}"
-                        VerticalOptions="Center">
-                    <Border.Shadow>
-                        <Shadow Brush="Black" Opacity="0.04" Offset="0, 1" Radius="2" />
-                    </Border.Shadow>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding GoBackCommand}" />
-                    </Border.GestureRecognizers>
-                    <Image Source="arrow_left.svg"
-                           WidthRequest="18"
-                           HeightRequest="18"
-                           Aspect="AspectFit"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center">
-                        <Image.Behaviors>
-                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurface}" />
-                        </Image.Behaviors>
-                    </Image>
-                </Border>
-
-                <!-- Screen Title -->
-                <Label Grid.Column="1"
-                       Text="Ativação Concluída"
-                       FontFamily="InterSemiBold"
-                       FontSize="18"
-                       TextColor="{StaticResource OnSurface}"
-                       VerticalOptions="Center"
-                       HorizontalOptions="Center" />
-
-                <!-- Options Button -->
-                <Border Grid.Column="2"
-                        WidthRequest="40"
-                        HeightRequest="40"
-                        StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1"
-                        Stroke="{StaticResource AuthBorder}"
-                        BackgroundColor="{StaticResource White}"
-                        VerticalOptions="Center">
-                    <Border.Shadow>
-                        <Shadow Brush="Black" Opacity="0.04" Offset="0, 1" Radius="2" />
-                    </Border.Shadow>
+                        StrokeShape="RoundRectangle 20"
+                        StrokeThickness="0"
+                        BackgroundColor="{StaticResource Surface}"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center"
+                        SemanticProperties.Description="Mais opções">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding MoreOptionsCommand}" />
                     </Border.GestureRecognizers>
@@ -79,14 +42,14 @@
                         </Image.Behaviors>
                     </Image>
                 </Border>
-            </Grid>
-
-            <!-- Cabeçalho de progresso concluído -->
-            <controls:StepProgress CurrentStep="3" TotalSteps="3" />
-        </VerticalStackLayout>
+            </controls:AppHeader.RightActionContent>
+            <controls:AppHeader.BottomContent>
+                <controls:StepProgress CurrentStep="3" TotalSteps="3" Margin="0, 6, 0, 0" />
+            </controls:AppHeader.BottomContent>
+        </controls:AppHeader>
 
         <!-- Row 1: Scrollable Content -->
-        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+        <ScrollView Grid.Row="1" Padding="20, 0" VerticalScrollBarVisibility="Never">
             <VerticalStackLayout Spacing="16">
 
                 <!-- Hero Card de Sucesso -->

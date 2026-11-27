@@ -1,6 +1,11 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using Venther.App.Services.Api;
+using Venther.App.Services.Interfaces;
 
 namespace Venther.App.Controls;
 
@@ -13,6 +18,29 @@ public partial class AppHeader : ContentView
             typeof(AppHeader),
             default(string),
             propertyChanged: (b, _, n) => ((AppHeader)b).OnTitleChanged((string?)n));
+
+    public static readonly BindableProperty SubtitleProperty =
+        BindableProperty.Create(
+            nameof(Subtitle),
+            typeof(string),
+            typeof(AppHeader),
+            default(string),
+            propertyChanged: (b, _, n) => ((AppHeader)b).OnSubtitleChanged((string?)n));
+
+    public static readonly BindableProperty ShowBackButtonProperty =
+        BindableProperty.Create(
+            nameof(ShowBackButton),
+            typeof(bool),
+            typeof(AppHeader),
+            false,
+            propertyChanged: (b, _, n) => ((AppHeader)b).BackButton.IsVisible = (bool)n);
+
+    public static readonly BindableProperty BackCommandProperty =
+        BindableProperty.Create(
+            nameof(BackCommand),
+            typeof(ICommand),
+            typeof(AppHeader),
+            default(ICommand));
 
     public static readonly BindableProperty ShowFilterButtonProperty =
         BindableProperty.Create(
@@ -59,10 +87,44 @@ public partial class AppHeader : ContentView
             typeof(AppHeader),
             default(ICommand));
 
+    public static readonly BindableProperty RightActionContentProperty =
+        BindableProperty.Create(
+            nameof(RightActionContent),
+            typeof(View),
+            typeof(AppHeader),
+            default(View),
+            propertyChanged: (b, _, n) => ((AppHeader)b).OnRightActionContentChanged((View?)n));
+
+    public static readonly BindableProperty BottomContentProperty =
+        BindableProperty.Create(
+            nameof(BottomContent),
+            typeof(View),
+            typeof(AppHeader),
+            default(View),
+            propertyChanged: (b, _, n) => ((AppHeader)b).OnBottomContentChanged((View?)n));
+
     public string? Title
     {
         get => (string?)GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
+    }
+
+    public string? Subtitle
+    {
+        get => (string?)GetValue(SubtitleProperty);
+        set => SetValue(SubtitleProperty, value);
+    }
+
+    public bool ShowBackButton
+    {
+        get => (bool)GetValue(ShowBackButtonProperty);
+        set => SetValue(ShowBackButtonProperty, value);
+    }
+
+    public ICommand? BackCommand
+    {
+        get => (ICommand?)GetValue(BackCommandProperty);
+        set => SetValue(BackCommandProperty, value);
     }
 
     public bool ShowFilterButton
@@ -101,6 +163,18 @@ public partial class AppHeader : ContentView
         set => SetValue(BellCommandProperty, value);
     }
 
+    public View? RightActionContent
+    {
+        get => (View?)GetValue(RightActionContentProperty);
+        set => SetValue(RightActionContentProperty, value);
+    }
+
+    public View? BottomContent
+    {
+        get => (View?)GetValue(BottomContentProperty);
+        set => SetValue(BottomContentProperty, value);
+    }
+
     public AppHeader()
     {
         InitializeComponent();
@@ -109,8 +183,40 @@ public partial class AppHeader : ContentView
     private void OnTitleChanged(string? newTitle)
     {
         bool hasTitle = !string.IsNullOrWhiteSpace(newTitle);
-        TitleLabel.IsVisible = hasTitle;
+        TitleLayout.IsVisible = hasTitle;
         BrandingLayout.IsVisible = !hasTitle;
+    }
+
+    private void OnSubtitleChanged(string? newSubtitle)
+    {
+        bool hasSubtitle = !string.IsNullOrWhiteSpace(newSubtitle);
+        SubtitleLabel.IsVisible = hasSubtitle;
+    }
+
+    private void OnRightActionContentChanged(View? newView)
+    {
+        RightActionContainer.Content = newView;
+        RightActionContainer.IsVisible = newView != null;
+    }
+
+    private void OnBottomContentChanged(View? newView)
+    {
+        BottomContainer.Content = newView;
+        BottomContainer.IsVisible = newView != null;
+    }
+
+    private async void OnBackTapped(object? sender, TappedEventArgs e)
+    {
+        if (BackCommand?.CanExecute(null) == true)
+        {
+            BackCommand.Execute(null);
+            return;
+        }
+
+        if (Shell.Current != null)
+        {
+            await Shell.Current.GoToAsync("..");
+        }
     }
 
     private void OnFilterTapped(object? sender, TappedEventArgs e)
@@ -139,6 +245,16 @@ public partial class AppHeader : ContentView
         if (Shell.Current != null)
         {
             await Shell.Current.GoToAsync("//main/alerts");
+        }
+    }
+
+    private void OnProfileTapped(object? sender, TappedEventArgs e)
+    {
+        var popup = new ProfileMenuPopup();
+        var currentPage = Application.Current?.Windows.Count > 0 ? Application.Current.Windows[0].Page : null;
+        if (currentPage != null)
+        {
+            currentPage.ShowPopup(popup);
         }
     }
 }

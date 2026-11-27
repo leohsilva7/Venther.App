@@ -13,31 +13,72 @@ namespace Venther.App.Services;
 public class DeviceService : IDeviceService
 {
     private readonly IApiClient _apiClient;
+    private readonly ICacheService _cacheService;
 
-    public DeviceService(IApiClient apiClient)
+    public DeviceService(IApiClient apiClient, ICacheService cacheService)
     {
         _apiClient = apiClient;
+        _cacheService = cacheService;
     }
 
-    public async Task<PagedResult<Device>> GetDevicesAsync(int page = 1, int pageSize = 20)
+    public async Task<CachedResult<PagedResult<Device>>> GetDevicesAsync(int page = 1, int pageSize = 20)
     {
-        var result = await _apiClient.GetAsync<PagedResult<BoardDto>>($"/boards?page={page}&pageSize={pageSize}");
-        if (result == null)
+        try
         {
-            return new PagedResult<Device>(Array.Empty<Device>(), page, pageSize, 0, 0);
-        }
+            var result = await _apiClient.GetAsync<PagedResult<BoardDto>>($"/boards?page={page}&pageSize={pageSize}");
+            if (result == null)
+            {
+                var empty = new PagedResult<Device>(Array.Empty<Device>(), page, pageSize, 0, 0);
+                return CachedResult<PagedResult<Device>>.Fresh(empty);
+            }
 
-        var items = result.Items.Select(MapBoard).ToList();
-        return new PagedResult<Device>(items, result.Page, result.PageSize, result.TotalCount, result.TotalPages);
+            var items = result.Items.Select(MapBoard).ToList();
+            var paged = new PagedResult<Device>(items, result.Page, result.PageSize, result.TotalCount, result.TotalPages);
+
+            if (page == 1)
+            {
+                await _cacheService.SaveAsync("devices", paged);
+            }
+
+            return CachedResult<PagedResult<Device>>.Fresh(paged);
+        }
+        catch (ApiException ex) when (ex.StatusCode == 0)
+        {
+            var cached = await _cacheService.LoadAsync<PagedResult<Device>>("devices");
+            if (cached != null)
+            {
+                return CachedResult<PagedResult<Device>>.FromStorage(cached.Data, cached.SavedAt);
+            }
+            throw;
+        }
     }
 
-    public async Task<Device?> GetDeviceByIdAsync(string id)
+    public async Task<CachedResult<Device?>> GetDeviceByIdAsync(string id)
     {
         if (!Guid.TryParse(id, out var boardId))
-            return null;
+            return CachedResult<Device?>.Fresh(null);
 
-        var board = await _apiClient.GetAsync<BoardDto>($"/boards/{boardId}");
-        return board == null ? null : MapBoard(board);
+        var cacheKey = $"board:{boardId}";
+
+        try
+        {
+            var board = await _apiClient.GetAsync<BoardDto>($"/boards/{boardId}");
+            var device = board == null ? null : MapBoard(board);
+            if (device != null)
+            {
+                await _cacheService.SaveAsync(cacheKey, device);
+            }
+            return CachedResult<Device?>.Fresh(device);
+        }
+        catch (ApiException ex) when (ex.StatusCode == 0)
+        {
+            var cached = await _cacheService.LoadAsync<Device>(cacheKey);
+            if (cached != null)
+            {
+                return CachedResult<Device?>.FromStorage(cached.Data, cached.SavedAt);
+            }
+            throw;
+        }
     }
 
     public async Task<Device> RegisterDeviceAsync(Guid customerId, string macAddress, string location)
@@ -54,7 +95,9 @@ public class DeviceService : IDeviceService
             throw new ApiException("Falha ao processar resposta do servidor.", 500);
         }
 
-        return MapBoard(created);
+        var device = MapBoard(created);
+        await _cacheService.SaveAsync($"board:{device.Id}", device);
+        return device;
     }
 
     public Task<bool> UpdateDeviceStatusAsync(string id, DeviceStatus status)

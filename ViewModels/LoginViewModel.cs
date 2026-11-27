@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls;
 using Venther.App.Helpers;
+using Venther.App.Services;
 using Venther.App.Services.Api;
 using Venther.App.Services.Interfaces;
 
@@ -142,6 +143,11 @@ public partial class LoginViewModel : BaseViewModel
                 return;
             }
 #endif
+
+            if (IPlatformApplication.Current?.Services.GetService(typeof(IAppNotificationService)) is IAppNotificationService notificationService)
+            {
+                _ = notificationService.RequestPermissionAsync();
+            }
 
             await Shell.Current.GoToAsync("//main/home");
         }

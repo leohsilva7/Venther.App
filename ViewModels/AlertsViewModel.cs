@@ -49,6 +49,12 @@ public partial class AlertsViewModel : BaseViewModel
     [ObservableProperty]
     private string _emptyMessage = "Não há alertas para o filtro selecionado.";
 
+    [ObservableProperty]
+    private bool _isOffline;
+
+    [ObservableProperty]
+    private string _offlineMessage = string.Empty;
+
     // TODO: No .NET MAUI Shell padrão não há propriedade nativa Tab.BadgeCount multiplataforma.
     // Para exibir o badge na TabBar no Android, implementar um ShellBottomNavViewAppearanceTracker
     // customizado utilizando bottomNavigationView.GetOrCreateBadge(tabIndex).Number = ActiveAlertsCount.
@@ -92,10 +98,20 @@ public partial class AlertsViewModel : BaseViewModel
 
         try
         {
-            var page = await _alertService.GetAlertsAsync(_currentPage, PageSize);
+            var result = await _alertService.GetAlertsAsync(_currentPage, PageSize);
             _allAlerts.Clear();
-            _allAlerts.AddRange(page.Items);
-            _totalPages = Math.Max(1, page.TotalPages);
+            _allAlerts.AddRange(result.Data.Items);
+            _totalPages = Math.Max(1, result.Data.TotalPages);
+
+            IsOffline = result.FromCache;
+            if (result.FromCache && result.CachedAt.HasValue)
+            {
+                OfflineMessage = $"Sem conexão • dados de {result.CachedAt.Value:dd/MM HH:mm}";
+            }
+            else
+            {
+                OfflineMessage = string.Empty;
+            }
 
             UpdateCounts();
             ApplyFilter();
@@ -133,13 +149,13 @@ public partial class AlertsViewModel : BaseViewModel
         {
             _isLoadingMore = true;
             var nextPage = _currentPage + 1;
-            var page = await _alertService.GetAlertsAsync(nextPage, PageSize);
+            var result = await _alertService.GetAlertsAsync(nextPage, PageSize);
 
-            if (page.Items.Count > 0)
+            if (result.Data.Items.Count > 0)
             {
                 _currentPage = nextPage;
-                _totalPages = Math.Max(1, page.TotalPages);
-                _allAlerts.AddRange(page.Items);
+                _totalPages = Math.Max(1, result.Data.TotalPages);
+                _allAlerts.AddRange(result.Data.Items);
                 UpdateCounts();
                 ApplyFilter();
             }

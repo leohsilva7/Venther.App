@@ -6,7 +6,7 @@ namespace Venther.App.Services.Interfaces;
 
 public interface IWorkOrderService
 {
-    Task<PagedResult<WorkOrder>> GetWorkOrdersAsync(int page = 1, int pageSize = 20);
-    Task<WorkOrder?> GetWorkOrderByIdAsync(string id);
+    Task<CachedResult<PagedResult<WorkOrder>>> GetWorkOrdersAsync(int page = 1, int pageSize = 20);
+    Task<CachedResult<WorkOrder?>> GetWorkOrderByIdAsync(string id);
     Task<bool> CompleteWorkOrderAsync(string id);
 }

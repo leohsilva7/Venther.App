@@ -10,88 +10,55 @@
              Shell.NavBarIsVisible="False">
 
     <Grid RowDefinitions="Auto, *, Auto"
-          Padding="20, 16, 20, 24"
+          Padding="0, 0, 0, 24"
           RowSpacing="16">
 
         <!-- Row 0: Header + StepProgress + Hardware Pill -->
-        <VerticalStackLayout Grid.Row="0" Spacing="16">
-            <!-- Header bar with back button -->
-            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
-                <Border Grid.Column="0"
-                        WidthRequest="40"
-                        HeightRequest="40"
-                        StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1"
-                        Stroke="{StaticResource AuthBorder}"
-                        BackgroundColor="{StaticResource White}"
-                        VerticalOptions="Center">
-                    <Border.Shadow>
-                        <Shadow Brush="Black" Opacity="0.04" Offset="0, 1" Radius="2" />
-                    </Border.Shadow>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding GoBackCommand}" />
-                    </Border.GestureRecognizers>
-                    <Image Source="arrow_left.svg"
-                           WidthRequest="18"
-                           HeightRequest="18"
-                           Aspect="AspectFit"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center">
-                        <Image.Behaviors>
-                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurface}" />
-                        </Image.Behaviors>
-                    </Image>
-                </Border>
+        <controls:AppHeader Grid.Row="0"
+                            Title="Conectar Dispositivo"
+                            Subtitle="Configuração de conectividade Wi-Fi"
+                            ShowBackButton="True"
+                            BackCommand="{Binding GoBackCommand}"
+                            ShowBellButton="False">
+            <controls:AppHeader.BottomContent>
+                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12" VerticalOptions="Center" Margin="0, 6, 0, 0">
+                    <controls:StepProgress Grid.Column="0" CurrentStep="2" TotalSteps="3" />
 
-                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                    <Label Text="Conectar Dispositivo"
-                           FontFamily="InterSemiBold"
-                           FontSize="20"
-                           TextColor="{StaticResource OnSurface}" />
-                    <Label Text="Configuração de conectividade Wi-Fi"
-                           Style="{StaticResource BodySmall}"
-                           TextColor="{StaticResource OnSurfaceVariant}" />
-                </VerticalStackLayout>
-            </Grid>
-
-            <!-- StepProgress Control with Hardware Pill -->
-            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12" VerticalOptions="Center">
-                <controls:StepProgress Grid.Column="0" CurrentStep="2" TotalSteps="3" />
-
-                <!-- Hardware Identifier Pill -->
-                <Border Grid.Column="1"
-                        BackgroundColor="{StaticResource SurfaceVariant}"
-                        StrokeShape="RoundRectangle 12"
-                        StrokeThickness="0"
-                        Padding="10, 6"
-                        VerticalOptions="End">
-                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                        <Image Source="cpu.svg"
-                               WidthRequest="14"
-                               HeightRequest="14"
-                               Aspect="AspectFit"
-                               VerticalOptions="Center">
-                            <Image.Behaviors>
-                                <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
-                            </Image.Behaviors>
-                        </Image>
-                        <Label Text="{Binding HardwareId}"
-                               FontFamily="InterSemiBold"
-                               FontSize="11"
-                               TextColor="{StaticResource Primary}"
-                               VerticalOptions="Center" />
-                        <BoxView WidthRequest="6"
-                                 HeightRequest="6"
-                                 CornerRadius="3"
-                                 Color="{StaticResource Success}"
-                                 VerticalOptions="Center" />
-                    </HorizontalStackLayout>
-                </Border>
-            </Grid>
-        </VerticalStackLayout>
+                    <!-- Hardware Identifier Pill -->
+                    <Border Grid.Column="1"
+                            BackgroundColor="{StaticResource SurfaceVariant}"
+                            StrokeShape="RoundRectangle 12"
+                            StrokeThickness="0"
+                            Padding="10, 6"
+                            VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Image Source="cpu.svg"
+                                   WidthRequest="14"
+                                   HeightRequest="14"
+                                   Aspect="AspectFit"
+                                   VerticalOptions="Center">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                                </Image.Behaviors>
+                            </Image>
+                            <Label Text="{Binding HardwareId}"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="11"
+                                   TextColor="{StaticResource Primary}"
+                                   VerticalOptions="Center" />
+                            <BoxView WidthRequest="6"
+                                     HeightRequest="6"
+                                     CornerRadius="3"
+                                     Color="{StaticResource Success}"
+                                     VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </Grid>
+            </controls:AppHeader.BottomContent>
+        </controls:AppHeader>
 
         <!-- Row 1: Scrollable Content -->
-        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+        <ScrollView Grid.Row="1" Padding="20, 0" VerticalScrollBarVisibility="Never">
             <VerticalStackLayout Spacing="16">
 
                 <!-- Seção 1: Rede Wi-Fi -->

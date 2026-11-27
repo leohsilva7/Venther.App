@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               x:Class="Venther.App.Controls.Dialogs.ConfirmPopup"
+               Color="Transparent"
+               CanBeDismissedByTappingOutsideOfPopup="False">
+
+    <Border WidthRequest="320"
+            StrokeShape="RoundRectangle 20"
+            StrokeThickness="1"
+            Stroke="{StaticResource AuthBorder}"
+            BackgroundColor="{StaticResource White}"
+            Padding="24"
+            Margin="20"
+            HorizontalOptions="Center"
+            VerticalOptions="Center">
+        <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.15" Offset="0, 8" Radius="16" />
+        </Border.Shadow>
+
+        <VerticalStackLayout Spacing="16">
+            <!-- Ícone Contextual -->
+            <Border x:Name="IconBadge"
+                    WidthRequest="48"
+                    HeightRequest="48"
+                    StrokeShape="RoundRectangle 24"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource SurfaceVariant}"
+                    HorizontalOptions="Center">
+                <Image x:Name="IconImage"
+                       Source="alert_circle.svg"
+                       WidthRequest="22"
+                       HeightRequest="22"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
+                    <Image.Behaviors>
+                        <toolkit:IconTintColorBehavior x:Name="IconTint" TintColor="{StaticResource Primary}" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
+
+            <!-- Título e Descrição -->
+            <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                <Label x:Name="TitleLabel"
+                       Text="Confirmar ação"
+                       FontFamily="InterSemiBold"
+                       FontSize="18"
+                       TextColor="{StaticResource OnSurface}"
+                       HorizontalTextAlignment="Center"
+                       HorizontalOptions="Center" />
+
+                <Label x:Name="MessageLabel"
+                       Text="Deseja realmente prosseguir com esta ação?"
+                       Style="{StaticResource BodySmall}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       HorizontalTextAlignment="Center"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <!-- Botões de Ação -->
+            <VerticalStackLayout Spacing="10" Margin="0, 4, 0, 0">
+                <!-- Botão Confirmar -->
+                <Border x:Name="ConfirmButton"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="0"
+                        BackgroundColor="{StaticResource Primary}"
+                        HeightRequest="46"
+                        SemanticProperties.Description="Confirmar">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnConfirmTapped" />
+                    </Border.GestureRecognizers>
+                    <Label x:Name="ConfirmText"
+                           Text="Confirmar"
+                           FontFamily="InterMedium"
+                           FontSize="14"
+                           TextColor="{StaticResource White}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <!-- Botão Cancelar -->
+                <Border StrokeShape="RoundRectangle 12"
+                        StrokeThickness="1"
+                        Stroke="{StaticResource AuthBorder}"
+                        BackgroundColor="{StaticResource Surface}"
+                        HeightRequest="44"
+                        SemanticProperties.Description="Cancelar">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCancelTapped" />
+                    </Border.GestureRecognizers>
+                    <Label x:Name="CancelText"
+                           Text="Cancelar"
+                           FontFamily="InterMedium"
+                           FontSize="14"
+                           TextColor="{StaticResource OnSurfaceVariant}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </Border>
+</toolkit:Popup>

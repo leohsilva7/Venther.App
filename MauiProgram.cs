@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui;
+using Plugin.LocalNotification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Venther.App.Helpers;
@@ -23,6 +24,7 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
+            .UseLocalNotification()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("Inter_24pt-Regular.ttf", "InterRegular");
@@ -43,6 +45,8 @@ public static class MauiProgram
 
         // API & Session Infrastructure
         builder.Services.AddSingleton<ISessionService, SessionService>();
+        builder.Services.AddSingleton<ICacheService, CacheService>();
+        builder.Services.AddSingleton<ISyncService, SyncService>();
         builder.Services.AddTransient<AuthHeaderHandler>();
 
         builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
@@ -53,6 +57,8 @@ public static class MauiProgram
         .AddHttpMessageHandler<AuthHeaderHandler>();
 
         // Services (Singleton)
+        builder.Services.AddSingleton<IDialogService, DialogService>();
+        builder.Services.AddSingleton<IAppNotificationService, AppNotificationService>();
         builder.Services.AddSingleton<ITelemetryHubService, TelemetryHubService>();
         builder.Services.AddSingleton<IAuthService, AuthService>();
         builder.Services.AddSingleton<IDeviceService, DeviceService>();

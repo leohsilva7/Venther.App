@@ -6,57 +6,44 @@
              xmlns:controls="clr-namespace:Venther.App.Controls"
              x:Class="Venther.App.Views.WorkOrders.WorkOrderDetailPage"
              x:DataType="vm:WorkOrderDetailViewModel"
+             Shell.NavBarIsVisible="False"
              Title="{Binding Title}">
 
-    <Grid RowDefinitions="64, *, Auto">
+    <Grid RowDefinitions="Auto, Auto, *, Auto">
 
-        <!-- ===== Header: voltar + título + ações ===== -->
-        <Grid Grid.Row="0"
-              ColumnDefinitions="Auto, *, Auto"
-              ColumnSpacing="8"
-              Padding="24, 0"
-              BackgroundColor="{StaticResource Background}">
-            
-            <ImageButton Grid.Column="0"
-                         Source="arrow_left.svg"
-                         WidthRequest="44"
-                         HeightRequest="44"
-                         Padding="14"
-                         BackgroundColor="Transparent"
-                         Command="{Binding BackCommand}"
-                         SemanticProperties.Description="Voltar">
-                <ImageButton.Behaviors>
-                    <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurface}" />
-                </ImageButton.Behaviors>
-            </ImageButton>
+        <!-- ===== AppHeader Padronizado: voltar + título + perfil ===== -->
+        <controls:AppHeader Grid.Row="0"
+                            Title="{Binding Title}"
+                            ShowBackButton="True"
+                            BackCommand="{Binding BackCommand}"
+                            ShowBellButton="False" />
 
-            <Label Grid.Column="1"
-                   Text="{Binding Title}"
-                   Style="{StaticResource Heading}"
-                   VerticalOptions="Center"
-                   LineBreakMode="TailTruncation" />
-
-            <Border Grid.Column="2"
-                    WidthRequest="32"
-                    HeightRequest="32"
-                    StrokeThickness="0"
-                    BackgroundColor="{StaticResource Primary}"
-                    VerticalOptions="Center">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="12" />
-                </Border.StrokeShape>
-                <Image Source="user.svg"
-                       WidthRequest="12"
-                       HeightRequest="12">
+        <!-- Offline Banner -->
+        <Border Grid.Row="1"
+                IsVisible="{Binding IsOffline}"
+                BackgroundColor="{StaticResource SurfaceVariant}"
+                Stroke="{StaticResource Outline}"
+                StrokeThickness="0"
+                Padding="16, 8">
+            <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                <Image Source="wifi.svg"
+                       WidthRequest="14"
+                       HeightRequest="14"
+                       Aspect="AspectFit"
+                       VerticalOptions="Center">
                     <Image.Behaviors>
-                        <toolkit:IconTintColorBehavior TintColor="White" />
+                        <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
                     </Image.Behaviors>
                 </Image>
-            </Border>
-        </Grid>
+                <Label Text="{Binding OfflineMessage}"
+                       Style="{StaticResource Caption}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Border>
 
         <!-- ===== Conteúdo com Scroll ===== -->
-        <ScrollView Grid.Row="1">
+        <ScrollView Grid.Row="2">
             <VerticalStackLayout Padding="24, 0, 24, 24" Spacing="20">
 
                 <!-- 1. Faixa de Alerta / SLA -->
@@ -368,7 +355,7 @@
         </ScrollView>
 
         <!-- ===== Rodapé Fixo com Botão CONCLUIR (altura 52, fundo Primary) ===== -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 BackgroundColor="{StaticResource White}"
                 Stroke="{StaticResource AuthBorder}"
                 StrokeThickness="1"

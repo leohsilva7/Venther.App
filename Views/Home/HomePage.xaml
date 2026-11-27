@@ -15,8 +15,33 @@
                             BellCommand="{Binding OpenAlertsCommand}" />
 
         <!-- Main Body Grid: List + FAB Overlay -->
-        <Grid Grid.Row="1">
-            <RefreshView IsRefreshing="{Binding IsRefreshing}"
+        <Grid Grid.Row="1" RowDefinitions="Auto, *">
+            <!-- Offline Banner -->
+            <Border Grid.Row="0"
+                    IsVisible="{Binding IsOffline}"
+                    BackgroundColor="{StaticResource SurfaceVariant}"
+                    Stroke="{StaticResource Outline}"
+                    StrokeThickness="0"
+                    Padding="16, 8">
+                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image Source="wifi.svg"
+                           WidthRequest="14"
+                           HeightRequest="14"
+                           Aspect="AspectFit"
+                           VerticalOptions="Center">
+                        <Image.Behaviors>
+                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                        </Image.Behaviors>
+                    </Image>
+                    <Label Text="{Binding OfflineMessage}"
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource OnSurfaceVariant}"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+
+            <RefreshView Grid.Row="1"
+                         IsRefreshing="{Binding IsRefreshing}"
                          Command="{Binding RefreshCommand}"
                          RefreshColor="{StaticResource Primary}">
                 <CollectionView ItemsSource="{Binding FilteredDevices}"

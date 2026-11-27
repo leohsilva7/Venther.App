@@ -48,7 +48,7 @@ public partial class RegisterDeviceViewModel : BaseViewModel
         try
         {
             var result = await _clientService.GetCustomersAsync(1, 100);
-            _allClients = result.Items.ToList();
+            _allClients = result.Data.Items.ToList();
             FilterClients(ClientName);
         }
         catch

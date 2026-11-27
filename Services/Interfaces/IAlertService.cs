@@ -6,5 +6,5 @@ namespace Venther.App.Services.Interfaces;
 
 public interface IAlertService
 {
-    Task<PagedResult<AlertItem>> GetAlertsAsync(int page = 1, int pageSize = 20);
+    Task<CachedResult<PagedResult<AlertItem>>> GetAlertsAsync(int page = 1, int pageSize = 20);
 }
