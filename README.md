@@ -124,6 +124,26 @@ O projeto segue o padrão **MVVM** com injeção de dependência configurada em 
 | `GET /api/customers/{id}` | `ClientService` | Integrado |
 | `GET /api/maintence_requests` | `WorkOrderService` | Integrado |
 | `GET /api/maintence_requests/{id}` | `WorkOrderService` | Integrado |
+
+Localize o adb.exe no PowerShell e verifique se o celular foi reconhecido
+Com o celular conectado no cabo USB e a Depuração USB ativada nas Opções do Desenvolvedor do Android, cole e execute o comando abaixo no PowerShell para buscar o adb.exe automaticamente e listar o aparelho:
+
+PowerShell
+$adb = Get-ChildItem -Path "C:\Program Files (x86)\Android", "$env:LOCALAPPDATA\Android", "C:\Android" -Filter "adb.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+Write-Host "ADB encontrado em: $adb"
+& $adb devices
+Verificação: O terminal mostra o caminho do adb.exe e, abaixo de List of devices attached, aparece o código do seu celular seguido de device (se aparecer unauthorized, olhe a tela do celular e toque em Permitir).
+
+Crie o túnel da porta 5084 para o celular
+Na mesma janela do PowerShell (para aproveitar a variável $adb), execute:
+
+PowerShell
+& $adb reverse tcp:5084 tcp:5084
+Verificação: O PowerShell retorna apenas 5084 sem mensagens de erro.
+
+Teste o Swagger no navegador do celular
+Com a Venther.Api rodando no PC (dotnet run), abra o Google Chrome no celular e acesse http://localhost:5084/swagger.
+Verificação: A interface do Swagger da API carrega normalmente na tela do celular.
 | `PUT /api/maintence_requests/{id}` | `WorkOrderService` | Integrado |
 | `GET /api/failures` | `AlertService` | Integrado |
 | `WS /hubs/telemetry` | `TelemetryHubService` | Integrado |
