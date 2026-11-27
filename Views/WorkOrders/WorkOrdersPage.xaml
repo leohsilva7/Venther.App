@@ -8,6 +8,7 @@
              x:Class="Venther.App.Views.WorkOrders.WorkOrdersPage"
              x:DataType="vm:WorkOrdersViewModel"
              Shell.NavBarIsVisible="False"
+             HideSoftInputOnTapped="True"
              BackgroundColor="{StaticResource Background}">
 
     <Grid RowDefinitions="Auto, *">

@@ -8,6 +8,7 @@
              x:Class="Venther.App.Views.Alerts.AlertsPage"
              x:DataType="vm:AlertsViewModel"
              Shell.NavBarIsVisible="False"
+             HideSoftInputOnTapped="True"
              BackgroundColor="{StaticResource Background}">
 
     <Grid RowDefinitions="Auto, *">
@@ -77,6 +78,7 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:AlertItem">
                     <controls:AlertCard Alert="{Binding .}"
+                                       ActionCommand="{Binding Source={RelativeSource AncestorType={x:Type vm:AlertsViewModel}}, Path=ViewDetailCommand}"
                                        Margin="20, 0, 20, 12" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>

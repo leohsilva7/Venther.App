@@ -76,4 +76,41 @@ public partial class AppShell : Shell
             }
         }
     }
+
+    protected override bool OnBackButtonPressed()
+    {
+        // 1. Se houver páginas empilhadas no NavigationStack da aba ativa, desempilha para a página anterior
+        if (Current?.Navigation?.NavigationStack.Count > 1)
+        {
+            Dispatcher.Dispatch(async () => await GoToAsync(".."));
+            return true;
+        }
+
+        // 2. Se estiver em abas secundárias (Alertas ou Chamados) no nível raiz, o botão voltar redireciona para a Início
+        var currentRoute = CurrentState?.Location?.OriginalString ?? string.Empty;
+        if (currentRoute.Contains("/alerts") || currentRoute.Contains("/workorders"))
+        {
+            Dispatcher.Dispatch(async () => await GoToAsync("//main/home"));
+            return true;
+        }
+
+        // 3. Se estiver na HomePage raiz ou Login, deixa o comportamento padrão do Android (minimizar app)
+        return base.OnBackButtonPressed();
+    }
+
+    protected override async void OnNavigating(ShellNavigatingEventArgs args)
+    {
+        base.OnNavigating(args);
+
+        // Ao alternar entre abas principais do TabBar (home, alerts, workorders),
+        // se houver sub-rotas empilhadas, garantir que a navegação mostre a raiz da aba
+        var target = args.Target?.Location?.OriginalString;
+        if (!string.IsNullOrEmpty(target) && target.StartsWith("//main/"))
+        {
+            if (Current?.Navigation?.NavigationStack.Count > 1)
+            {
+                await Current.Navigation.PopToRootAsync(false);
+            }
+        }
+    }
 }

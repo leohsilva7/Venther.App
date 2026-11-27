@@ -15,7 +15,7 @@ public interface IAppNotificationService
 {
     Task RequestPermissionAsync();
     void Initialize();
-    Task NotifyFaultAsync(Guid boardId, string failureCause, string date);
+    Task NotifyFaultAsync(Guid boardId, string failureCause, DateTime date);
 }
 
 public class AppNotificationService : IAppNotificationService
@@ -78,9 +78,9 @@ public class AppNotificationService : IAppNotificationService
         }
     }
 
-    public async Task NotifyFaultAsync(Guid boardId, string failureCause, string date)
+    public async Task NotifyFaultAsync(Guid boardId, string failureCause, DateTime date)
     {
-        var deduplicationKey = $"{boardId:D}_{date}";
+        var deduplicationKey = $"{boardId:D}_{date:O}";
         if (!_notifiedFaults.TryAdd(deduplicationKey, true))
             return;
 

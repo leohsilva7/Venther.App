@@ -7,6 +7,7 @@
              xmlns:controls="clr-namespace:Venther.App.Controls"
              x:Class="Venther.App.Views.Home.HomePage"
              x:DataType="vm:HomeViewModel"
+             HideSoftInputOnTapped="True"
              Title="Início">
 
     <Grid RowDefinitions="Auto, *">
@@ -14,8 +15,8 @@
         <controls:AppHeader Grid.Row="0"
                             BellCommand="{Binding OpenAlertsCommand}" />
 
-        <!-- Main Body Grid: List + FAB Overlay -->
-        <Grid Grid.Row="1" RowDefinitions="Auto, *">
+        <!-- Main Body Grid: Search + List + FAB Overlay -->
+        <Grid Grid.Row="1" RowDefinitions="Auto, Auto, *">
             <!-- Offline Banner -->
             <Border Grid.Row="0"
                     IsVisible="{Binding IsOffline}"
@@ -40,7 +41,42 @@
                 </HorizontalStackLayout>
             </Border>
 
-            <RefreshView Grid.Row="1"
+            <!-- Search Field Fixado Fora da CollectionView para manter foco contínuo -->
+            <Border Grid.Row="1"
+                    HeightRequest="48"
+                    StrokeShape="RoundRectangle 12"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource AuthBorder}"
+                    BackgroundColor="{StaticResource White}"
+                    Margin="20, 12, 20, 4"
+                    Padding="16, 0">
+                <Grid ColumnDefinitions="Auto, *"
+                      ColumnSpacing="12"
+                      VerticalOptions="Center">
+                    <Image Grid.Column="0"
+                           Source="search.svg"
+                           WidthRequest="18"
+                           HeightRequest="18"
+                           Aspect="AspectFit"
+                           VerticalOptions="Center">
+                        <Image.Behaviors>
+                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                        </Image.Behaviors>
+                    </Image>
+
+                    <Entry Grid.Column="1"
+                           Text="{Binding SearchText, Mode=TwoWay}"
+                           Placeholder="Buscar equipamento ou local..."
+                           PlaceholderColor="{StaticResource AuthMuted}"
+                           TextColor="{StaticResource OnSurface}"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           ClearButtonVisibility="WhileEditing"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <RefreshView Grid.Row="2"
                          IsRefreshing="{Binding IsRefreshing}"
                          Command="{Binding RefreshCommand}"
                          RefreshColor="{StaticResource Primary}">
@@ -49,42 +85,10 @@
                                 RemainingItemsThreshold="3"
                                 RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
 
-                <!-- Header: Search Field, Summary Chips, Section Title -->
+                <!-- Header: Summary Chips, Section Title -->
                 <CollectionView.Header>
                     <VerticalStackLayout Spacing="16"
-                                         Padding="20, 12, 20, 8">
-
-                        <!-- Search Field -->
-                        <Border HeightRequest="48"
-                                StrokeShape="RoundRectangle 12"
-                                StrokeThickness="1"
-                                Stroke="{StaticResource AuthBorder}"
-                                BackgroundColor="{StaticResource White}"
-                                Padding="16, 0">
-                            <Grid ColumnDefinitions="Auto, *"
-                                  ColumnSpacing="12"
-                                  VerticalOptions="Center">
-                                <Image Grid.Column="0"
-                                       Source="search.svg"
-                                       WidthRequest="18"
-                                       HeightRequest="18"
-                                       Aspect="AspectFit"
-                                       VerticalOptions="Center">
-                                    <Image.Behaviors>
-                                        <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
-                                    </Image.Behaviors>
-                                </Image>
-
-                                <Entry Grid.Column="1"
-                                       Text="{Binding SearchText, Mode=TwoWay}"
-                                       Placeholder="Buscar equipamento ou local..."
-                                       PlaceholderColor="{StaticResource AuthMuted}"
-                                       TextColor="{StaticResource OnSurface}"
-                                       FontFamily="InterRegular"
-                                       FontSize="14"
-                                       VerticalOptions="Center" />
-                            </Grid>
-                        </Border>
+                                         Padding="20, 8, 20, 8">
 
                         <!-- Summary Horizontal Chips (Total, Normais, Atenção) -->
                         <Grid ColumnDefinitions="*, *, *"

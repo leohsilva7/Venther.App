@@ -5,7 +5,7 @@ using Venther.App.Services.Api.Dtos;
 
 namespace Venther.App.Services.Interfaces;
 
-public record FaultRaisedDto(Guid BoardId, string FailureCause, string Date);
+public record FaultRaisedDto(Guid BoardId, string FailureCause, DateTime Date);
 
 public interface ITelemetryHubService
 {
