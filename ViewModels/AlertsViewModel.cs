@@ -172,9 +172,7 @@ public partial class AlertsViewModel : BaseViewModel
 
     private void OnFaultRaised(FaultRaisedDto fault)
     {
-        var date = DateTime.TryParse(fault.Date, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed)
-            ? parsed.ToLocalTime()
-            : DateTime.Now;
+        var date = fault.Date.ToLocalTime();
 
         bool exists = _allAlerts.Any(a =>
             a.BoardId == fault.BoardId &&

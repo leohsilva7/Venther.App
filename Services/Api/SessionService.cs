@@ -53,10 +53,13 @@ public class SessionService : ISessionService
 
     public async Task SaveAsync(string token, int expiresInSeconds, UserDto user)
     {
+        // Garante que, mesmo que expiresInSeconds venha zerado ou negativo, a sessão tenha uma expiração segura (ex: 8 horas)
+        var validDurationSeconds = expiresInSeconds > 0 ? expiresInSeconds : 8 * 3600;
+
         var data = new SessionData
         {
             Token = token,
-            ExpiresAtUtc = DateTime.UtcNow.AddSeconds(expiresInSeconds),
+            ExpiresAtUtc = DateTime.UtcNow.AddSeconds(validDurationSeconds),
             User = user
         };
 

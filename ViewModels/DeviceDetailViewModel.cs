@@ -11,6 +11,7 @@ using Venther.App.Models;
 using Venther.App.Services.Api;
 using Venther.App.Services.Api.Dtos;
 using Venther.App.Services.Interfaces;
+using DeviceModel = Venther.App.Models.Device;
 
 namespace Venther.App.ViewModels;
 
@@ -22,21 +23,58 @@ public record MetricViewData(string Value, string Unit, string Caption, bool IsA
 public record HistoryLogItem(string Timestamp, string Supply, string Return, string GasLine, string DeltaP);
 
 [QueryProperty(nameof(DeviceId), "DeviceId")]
-public partial class DeviceDetailViewModel : BaseViewModel
+public partial class DeviceDetailViewModel : BaseViewModel, IQueryAttributable
 {
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     private readonly IDeviceService _deviceService;
+    private readonly IAlertService _alertService;
     private readonly ITelemetryHubService _telemetryHub;
     private readonly IDialogService _dialogService;
     private Guid _boardGuid;
 
-    public DeviceDetailViewModel(IDeviceService deviceService, ITelemetryHubService telemetryHub, IDialogService dialogService)
+    public DeviceDetailViewModel(IDeviceService deviceService, IAlertService alertService, ITelemetryHubService telemetryHub, IDialogService dialogService)
     {
         _deviceService = deviceService;
+        _alertService = alertService;
         _telemetryHub = telemetryHub;
         _dialogService = dialogService;
         Title = "Detalhes do Equipamento";
         _telemetryHub.TelemetryUpdated += OnTelemetryUpdated;
+    }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query.TryGetValue("DeviceId", out var idVal) && idVal != null)
+        {
+            DeviceId = idVal.ToString();
+        }
+        else if (query.TryGetValue("BoardId", out var boardIdVal) && boardIdVal != null)
+        {
+            DeviceId = boardIdVal.ToString();
+        }
+        else if (query.TryGetValue("Id", out var rawId) && rawId != null)
+        {
+            DeviceId = rawId.ToString();
+        }
+        else if (query.TryGetValue("Alert", out var alertObj) && alertObj is AlertItem alertItem)
+        {
+            if (alertItem.BoardId != Guid.Empty)
+            {
+                DeviceId = alertItem.BoardId.ToString();
+            }
+        }
+        else if (query.TryGetValue("Device", out var devObj) && devObj is DeviceModel dev)
+        {
+            if (!string.IsNullOrEmpty(dev.Id))
+            {
+                DeviceId = dev.Id;
+            }
+        }
+
+        if (Guid.TryParse(DeviceId, out _boardGuid) && _boardGuid != Guid.Empty)
+        {
+            _ = LoadAsync();
+        }
     }
 
     [ObservableProperty] private string? deviceId;
@@ -108,16 +146,87 @@ public partial class DeviceDetailViewModel : BaseViewModel
                 return;
             }
 
+            // Carrega os dados cadastrais da placa (nome, localização, etc.)
+            try
+            {
+                var deviceResult = await _deviceService.GetDeviceByIdAsync(DeviceId);
+                if (deviceResult.Data != null)
+                {
+                    Title = string.IsNullOrWhiteSpace(deviceResult.Data.Name)
+                        ? $"Placa {deviceResult.Data.HardwareId}"
+                        : deviceResult.Data.Name;
+                }
+            }
+            catch
+            {
+                // Fallback para manter a página utilizável se falhar a busca cadastral
+            }
+
+            // Verifica se há falhas/alertas ativos para refletir no badge de status
+            bool hasActiveFailure = false;
+            try
+            {
+                var alertsRes = await _alertService.GetAlertsAsync(1, 100);
+                if (alertsRes.Data?.Items != null)
+                {
+                    hasActiveFailure = alertsRes.Data.Items.Any(a => !a.IsResolved && a.BoardId == _boardGuid);
+                }
+            }
+            catch
+            {
+                // Ignora se não conseguir carregar alertas
+            }
+
             var initial = await _telemetryHub.SubscribeAsync(new[] { _boardGuid });
             var latest = initial.FirstOrDefault() ?? _telemetryHub.GetLatestTelemetry(_boardGuid);
 
             if (latest != null)
             {
-                ApplyTelemetry(latest);
+                ApplyTelemetry(latest, hasActiveFailure);
             }
             else
             {
-                ApplyNoData();
+                // Fallback: busca último registro em /logs antes de cair em ApplyNoData
+                var loadedFromLog = false;
+                try
+                {
+                    var currentMonth = DateTime.UtcNow.ToString("yyyy-MM");
+                    var logs = await _deviceService.GetBoardLogsAsync(_boardGuid, currentMonth);
+                    var lastLog = logs.OrderByDescending(l => l.CreatedAt).FirstOrDefault();
+                    if (lastLog != null)
+                    {
+                        var dtoFromLog = new BoardTelemetryDto(
+                            BoardId: _boardGuid,
+                            MacAddress: string.Empty,
+                            SupplyAirTemperature: lastLog.SupplyAirTemperature,
+                            ReturnAirTemperature: lastLog.ReturnAirTemperature,
+                            CondensationAirTemperature: lastLog.CondensationAirTemperature,
+                            SpaceTemperature: lastLog.SpaceTemperature,
+                            GasLineTemperature: lastLog.GasLineTemperature,
+                            LiquidLineTemperature: lastLog.LiquidLineTemperature,
+                            EvaporatorCoilPressureDrop: lastLog.EvaporatorCoilPressureDrop,
+                            CondenserCoilPressureDrop: lastLog.CondenserCoilPressureDrop,
+                            IsOnline: lastLog.CreatedAt.HasValue && (DateTime.UtcNow - lastLog.CreatedAt.Value.ToUniversalTime()).TotalMinutes < 5,
+                            LastSeen: lastLog.CreatedAt
+                        );
+                        ApplyTelemetry(dtoFromLog, hasActiveFailure);
+                        loadedFromLog = true;
+                    }
+                }
+                catch
+                {
+                    // Fallback falhou
+                }
+
+                if (!loadedFromLog)
+                {
+                    ApplyNoData();
+                    if (hasActiveFailure)
+                    {
+                        HasAlert = true;
+                        StatusLabel = "Crítico";
+                    }
+                }
             }
 
             await LoadTrendAsync();
@@ -160,18 +269,20 @@ public partial class DeviceDetailViewModel : BaseViewModel
         NowLabel = "Sem leitura";
     }
 
-    private void ApplyTelemetry(BoardTelemetryDto t)
+    private void ApplyTelemetry(BoardTelemetryDto t, bool forceAlert = false)
     {
+        var isAlert = forceAlert || !t.IsOnline;
         var caption = t.IsOnline ? "Ao vivo" : "Offline";
-        var isAlert = !t.IsOnline;
 
         Supply = new($"{t.SupplyAirTemperature.ToString("0.0", Inv)}°C", "", caption, isAlert);
         ReturnTemp = new($"{t.ReturnAirTemperature.ToString("0.0", Inv)}°C", "", caption, isAlert);
-        Gas = new($"{t.GasLineTemperature.ToString("0.0", Inv)}°C", "", caption, isAlert);
+        // Se o valor for maior que 35, representa a pressão em PSI do sensor de sucção R410A; caso contrário, temperatura em °C
+        var gasUnit = t.GasLineTemperature > 35.0 ? "PSI" : "°C";
+        Gas = new($"{t.GasLineTemperature.ToString("0.0", Inv)} {gasUnit}", "", caption, isAlert);
         DeltaP = new(t.EvaporatorCoilPressureDrop.ToString("0", Inv), "Pa", caption, isAlert);
 
         HasAlert = isAlert;
-        StatusLabel = t.IsOnline ? "Online" : "Offline";
+        StatusLabel = forceAlert ? "Crítico" : (t.IsOnline ? "Online" : "Offline");
         NowLabel = FormatLastSeen(t.LastSeen);
     }
 

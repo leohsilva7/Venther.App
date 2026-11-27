@@ -121,10 +121,11 @@ public partial class AlertCard : ContentView
             return;
         }
 
-        if (Alert != null)
+        if (Alert != null && Alert.BoardId != Guid.Empty)
         {
             await Shell.Current.GoToAsync(Routes.DeviceDetail, new Dictionary<string, object>
             {
+                ["DeviceId"] = Alert.BoardId.ToString(),
                 ["Alert"] = Alert,
                 ["AlertId"] = Alert.Id
             });

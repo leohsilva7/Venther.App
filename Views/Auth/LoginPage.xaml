@@ -5,6 +5,7 @@
              xmlns:controls="clr-namespace:Venther.App.Controls"
              x:Class="Venther.App.Views.Auth.LoginPage"
              x:DataType="vm:LoginViewModel"
+             HideSoftInputOnTapped="True"
              Title="Login">
 
     <ScrollView>

@@ -1,15 +1,31 @@
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Venther.App.Models;
 
-public class Device
+public partial class Device : ObservableObject
 {
-    public string Id { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string Location { get; set; } = string.Empty;
-    public string HardwareId { get; set; } = string.Empty;
-    public Guid CustomerId { get; set; }
-    public string InstallationDate { get; set; } = string.Empty;
-    public DeviceStatus Status { get; set; } = DeviceStatus.Normal;
-    public string LastReading { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string id = string.Empty;
+
+    [ObservableProperty]
+    private string name = string.Empty;
+
+    [ObservableProperty]
+    private string location = string.Empty;
+
+    [ObservableProperty]
+    private string hardwareId = string.Empty;
+
+    [ObservableProperty]
+    private Guid customerId;
+
+    [ObservableProperty]
+    private string installationDate = string.Empty;
+
+    [ObservableProperty]
+    private DeviceStatus status = DeviceStatus.Normal;
+
+    [ObservableProperty]
+    private string lastReading = string.Empty;
 }

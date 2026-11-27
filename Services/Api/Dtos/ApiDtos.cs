@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace Venther.App.Services.Api.Dtos;
 
@@ -144,5 +145,6 @@ public record BoardTelemetryDto(
     double EvaporatorCoilPressureDrop,
     double CondenserCoilPressureDrop,
     bool IsOnline,
+    [property: JsonPropertyName("receivedAt")]
     DateTime? LastSeen
 );

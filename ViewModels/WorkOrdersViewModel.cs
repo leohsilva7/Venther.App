@@ -19,6 +19,7 @@ public partial class WorkOrdersViewModel : BaseViewModel
     private const int PageSize = 20;
     private readonly IWorkOrderService _workOrderService;
     private readonly ISyncService _syncService;
+    private readonly ITelemetryHubService? _telemetryHub;
     private readonly List<WorkOrder> _allWorkOrders = new();
     private int _currentPage = 1;
     private int _totalPages = 1;
@@ -51,12 +52,25 @@ public partial class WorkOrdersViewModel : BaseViewModel
     [ObservableProperty]
     private string _offlineMessage = string.Empty;
 
-    public WorkOrdersViewModel(IWorkOrderService workOrderService, ISyncService syncService)
+    public WorkOrdersViewModel(IWorkOrderService workOrderService, ISyncService syncService, ITelemetryHubService? telemetryHub = null)
     {
         _workOrderService = workOrderService;
         _syncService = syncService;
+        _telemetryHub = telemetryHub;
         Title = "Chamados";
         InitSegments();
+        if (_telemetryHub != null)
+        {
+            _telemetryHub.FaultRaised += OnFaultRaised;
+        }
+    }
+
+    private void OnFaultRaised(FaultRaisedDto fault)
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await Refresh();
+        });
     }
 
     private void InitSegments()

@@ -17,7 +17,7 @@ public partial class DeviceCard : ContentView
             typeof(Device),
             typeof(DeviceCard),
             default(Device),
-            propertyChanged: (b, _, _) => ((DeviceCard)b).OnDeviceChanged());
+            propertyChanged: OnDevicePropertyChanged);
 
     public static readonly BindableProperty TapCommandProperty =
         BindableProperty.Create(
@@ -44,9 +44,26 @@ public partial class DeviceCard : ContentView
         UpdateStatusBar();
     }
 
-    private void OnDeviceChanged()
+    private static void OnDevicePropertyChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        UpdateStatusBar();
+        var card = (DeviceCard)bindable;
+        if (oldValue is System.ComponentModel.INotifyPropertyChanged oldNpc)
+        {
+            oldNpc.PropertyChanged -= card.OnDeviceModelPropertyChanged;
+        }
+        if (newValue is System.ComponentModel.INotifyPropertyChanged newNpc)
+        {
+            newNpc.PropertyChanged += card.OnDeviceModelPropertyChanged;
+        }
+        card.UpdateStatusBar();
+    }
+
+    private void OnDeviceModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Models.Device.Status))
+        {
+            MainThread.BeginInvokeOnMainThread(UpdateStatusBar);
+        }
     }
 
     private void UpdateStatusBar()
