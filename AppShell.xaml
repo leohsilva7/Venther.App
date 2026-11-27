@@ -9,6 +9,7 @@
     xmlns:workorders="clr-namespace:Venther.App.Views.WorkOrders"
     Title="Venther"
     FlyoutBehavior="Disabled"
+    Shell.NavBarIsVisible="False"
     Shell.TabBarBackgroundColor="{StaticResource Background}"
     Shell.TabBarForegroundColor="{StaticResource Primary}"
     Shell.TabBarTitleColor="{StaticResource Primary}"

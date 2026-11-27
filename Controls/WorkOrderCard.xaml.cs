@@ -94,8 +94,8 @@ public partial class WorkOrderCard : ContentView
         // Simple scale pulse on the dot to suggest "live" state
         while (InProgressLayout.IsVisible && WorkOrder?.Status == WorkOrderStatus.InProgress)
         {
-            await PulseDot.ScaleTo(1.5, 600, Easing.SinInOut);
-            await PulseDot.ScaleTo(1.0, 600, Easing.SinInOut);
+            await PulseDot.ScaleToAsync(1.5, 600, Easing.SinInOut);
+            await PulseDot.ScaleToAsync(1.0, 600, Easing.SinInOut);
         }
     }
 
@@ -114,7 +114,9 @@ public partial class WorkOrderCard : ContentView
             StatusBar.Color = Color.FromArgb("#16A34A");
 
             ScheduledStatusBadge.BackgroundColor = Color.FromArgb("#DCFCE7");
-            ScheduledStatusLabel.Text = "Concluída";
+            ScheduledStatusLabel.Text = wo.ScheduledDateLabel?.Contains("pendente", StringComparison.OrdinalIgnoreCase) == true
+                ? "Concluída • pendente de envio"
+                : "Concluída";
             ScheduledStatusLabel.TextColor = Color.FromArgb("#15803D");
 
             ScheduledActionButton.Text = "Ver detalhes";

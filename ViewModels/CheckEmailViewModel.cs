@@ -14,6 +14,7 @@ namespace Venther.App.ViewModels;
 public partial class CheckEmailViewModel : BaseViewModel
 {
     private readonly IAuthService _authService;
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty]
     private string _email = string.Empty;
@@ -32,9 +33,10 @@ public partial class CheckEmailViewModel : BaseViewModel
 
     public bool IsNotBusy => !IsBusy;
 
-    public CheckEmailViewModel(IAuthService authService)
+    public CheckEmailViewModel(IAuthService authService, IDialogService dialogService)
     {
         _authService = authService;
+        _dialogService = dialogService;
         Title = "Verificar E-mail";
     }
 
@@ -101,10 +103,7 @@ public partial class CheckEmailViewModel : BaseViewModel
             IsResending = true;
             await _authService.ForgotPasswordAsync(Email.Trim());
 
-            if (Application.Current?.Windows.Count > 0)
-            {
-                await Application.Current.Windows[0].Page!.DisplayAlertAsync("Código Reenviado", "Um novo código de 6 dígitos foi enviado para o seu e-mail.", "OK");
-            }
+            await _dialogService.ShowAlertAsync("Código Reenviado", "Um novo código de 6 dígitos foi enviado para o seu e-mail.", "OK", DialogType.Success);
         }
         catch (ApiException ex)
         {

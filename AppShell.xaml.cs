@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls;
 using Venther.App.Helpers;
+using Venther.App.Services;
 using Venther.App.Services.Api;
 using Venther.App.Services.Interfaces;
 using Venther.App.Views.Alerts;
@@ -30,6 +31,19 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(Routes.PasswordResetSuccess, typeof(PasswordResetSuccessPage));
 
         _sessionService = IPlatformApplication.Current?.Services.GetService(typeof(ISessionService)) as ISessionService;
+
+        if (IPlatformApplication.Current?.Services.GetService(typeof(IAppNotificationService)) is IAppNotificationService notificationService)
+        {
+            notificationService.Initialize();
+
+            if (IPlatformApplication.Current?.Services.GetService(typeof(ITelemetryHubService)) is ITelemetryHubService hub)
+            {
+                hub.FaultRaised += async (fault) =>
+                {
+                    await notificationService.NotifyFaultAsync(fault.BoardId, fault.FailureCause, fault.Date);
+                };
+            }
+        }
     }
 
     protected override async void OnParentSet()
@@ -42,9 +56,17 @@ public partial class AppShell : Shell
 
             if (_sessionService.IsAuthenticated)
             {
+                if (IPlatformApplication.Current?.Services.GetService(typeof(IAppNotificationService)) is IAppNotificationService notificationService)
+                {
+                    _ = notificationService.RequestPermissionAsync();
+                }
                 if (IPlatformApplication.Current?.Services.GetService(typeof(ITelemetryHubService)) is ITelemetryHubService hub)
                 {
                     _ = hub.ConnectAsync();
+                }
+                if (IPlatformApplication.Current?.Services.GetService(typeof(ISyncService)) is ISyncService sync)
+                {
+                    _ = sync.ProcessQueueAsync();
                 }
                 await GoToAsync("//main/home");
             }

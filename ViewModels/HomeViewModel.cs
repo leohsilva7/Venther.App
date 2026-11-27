@@ -49,6 +49,12 @@ public partial class HomeViewModel : BaseViewModel
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
+    [ObservableProperty]
+    private bool _isOffline;
+
+    [ObservableProperty]
+    private string _offlineMessage = string.Empty;
+
     public ObservableCollection<Device> FilteredDevices { get; } = new();
 
     public HomeViewModel(IDeviceService deviceService, ITelemetryHubService telemetryHub)
@@ -74,10 +80,20 @@ public partial class HomeViewModel : BaseViewModel
             ErrorMessage = string.Empty;
             _currentPage = 1;
 
-            var page = await _deviceService.GetDevicesAsync(_currentPage, PageSize);
+            var result = await _deviceService.GetDevicesAsync(_currentPage, PageSize);
             _allDevices.Clear();
-            _allDevices.AddRange(page.Items);
-            _totalPages = Math.Max(1, page.TotalPages);
+            _allDevices.AddRange(result.Data.Items);
+            _totalPages = Math.Max(1, result.Data.TotalPages);
+
+            IsOffline = result.FromCache;
+            if (result.FromCache && result.CachedAt.HasValue)
+            {
+                OfflineMessage = $"Sem conexão • dados de {result.CachedAt.Value:dd/MM HH:mm}";
+            }
+            else
+            {
+                OfflineMessage = string.Empty;
+            }
 
             UpdateCounts();
             ApplyFilters();
@@ -117,13 +133,13 @@ public partial class HomeViewModel : BaseViewModel
         {
             _isLoadingMore = true;
             var nextPage = _currentPage + 1;
-            var page = await _deviceService.GetDevicesAsync(nextPage, PageSize);
+            var result = await _deviceService.GetDevicesAsync(nextPage, PageSize);
 
-            if (page.Items.Count > 0)
+            if (result.Data.Items.Count > 0)
             {
                 _currentPage = nextPage;
-                _totalPages = Math.Max(1, page.TotalPages);
-                _allDevices.AddRange(page.Items);
+                _totalPages = Math.Max(1, result.Data.TotalPages);
+                _allDevices.AddRange(result.Data.Items);
                 UpdateCounts();
                 ApplyFilters();
             }

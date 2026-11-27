@@ -10,56 +10,23 @@
              Shell.NavBarIsVisible="False">
 
     <Grid RowDefinitions="Auto, *, Auto"
-          Padding="20, 16, 20, 24"
-          RowSpacing="20">
+          Padding="0, 0, 0, 24"
+          RowSpacing="16">
 
         <!-- Header + StepProgress -->
-        <VerticalStackLayout Grid.Row="0" Spacing="16">
-            <!-- Header bar with back button -->
-            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
-                <Border Grid.Column="0"
-                        WidthRequest="40"
-                        HeightRequest="40"
-                        StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1"
-                        Stroke="{StaticResource AuthBorder}"
-                        BackgroundColor="{StaticResource White}"
-                        VerticalOptions="Center">
-                    <Border.Shadow>
-                        <Shadow Brush="Black" Opacity="0.04" Offset="0, 1" Radius="2" />
-                    </Border.Shadow>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding GoBackCommand}" />
-                    </Border.GestureRecognizers>
-                    <Image Source="arrow_left.svg"
-                           WidthRequest="18"
-                           HeightRequest="18"
-                           Aspect="AspectFit"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center">
-                        <Image.Behaviors>
-                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurface}" />
-                        </Image.Behaviors>
-                    </Image>
-                </Border>
-
-                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                    <Label Text="Cadastrar Dispositivo"
-                           FontFamily="InterSemiBold"
-                           FontSize="20"
-                           TextColor="{StaticResource OnSurface}" />
-                    <Label Text="Identifique o cliente e o local de instalação"
-                           Style="{StaticResource BodySmall}"
-                           TextColor="{StaticResource OnSurfaceVariant}" />
-                </VerticalStackLayout>
-            </Grid>
-
-            <!-- StepProgress Control -->
-            <controls:StepProgress CurrentStep="1" TotalSteps="3" />
-        </VerticalStackLayout>
+        <controls:AppHeader Grid.Row="0"
+                            Title="Cadastrar Dispositivo"
+                            Subtitle="Identifique o cliente e o local de instalação"
+                            ShowBackButton="True"
+                            BackCommand="{Binding GoBackCommand}"
+                            ShowBellButton="False">
+            <controls:AppHeader.BottomContent>
+                <controls:StepProgress CurrentStep="1" TotalSteps="3" Margin="0, 6, 0, 0" />
+            </controls:AppHeader.BottomContent>
+        </controls:AppHeader>
 
         <!-- Main Form Card in ScrollView -->
-        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+        <ScrollView Grid.Row="1" Padding="20, 0" VerticalScrollBarVisibility="Never">
             <Border BackgroundColor="{StaticResource White}"
                     Stroke="{StaticResource AuthBorder}"
                     StrokeThickness="1"
@@ -142,7 +109,8 @@
                 Command="{Binding AdvanceCommand}"
                 IsEnabled="{Binding CanProceed}"
                 Style="{StaticResource PrimaryButton}"
-                CornerRadius="12">
+                CornerRadius="12"
+                Margin="20, 0">
             <Button.Triggers>
                 <Trigger TargetType="Button" Property="IsEnabled" Value="False">
                     <Setter Property="Opacity" Value="0.5" />

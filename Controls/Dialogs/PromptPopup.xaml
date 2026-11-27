@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               x:Class="Venther.App.Controls.Dialogs.PromptPopup"
+               Color="Transparent"
+               CanBeDismissedByTappingOutsideOfPopup="False">
+
+    <Border WidthRequest="340"
+            StrokeShape="RoundRectangle 20"
+            StrokeThickness="1"
+            Stroke="{StaticResource AuthBorder}"
+            BackgroundColor="{StaticResource White}"
+            Padding="20"
+            Margin="20"
+            HorizontalOptions="Center"
+            VerticalOptions="Center">
+        <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.15" Offset="0, 8" Radius="16" />
+        </Border.Shadow>
+
+        <VerticalStackLayout Spacing="16">
+            <!-- Título e Mensagem -->
+            <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                <Label x:Name="TitleLabel"
+                       Text="Entrada"
+                       FontFamily="InterSemiBold"
+                       FontSize="18"
+                       TextColor="{StaticResource OnSurface}"
+                       HorizontalTextAlignment="Center"
+                       HorizontalOptions="Center" />
+
+                <Label x:Name="MessageLabel"
+                       Text="Informe o valor:"
+                       Style="{StaticResource BodySmall}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       HorizontalTextAlignment="Center"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <!-- Input Customizado com Border -->
+            <Border StrokeShape="RoundRectangle 12"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource AuthBorder}"
+                    BackgroundColor="{StaticResource Surface}"
+                    HeightRequest="48"
+                    Padding="14, 0">
+                <Entry x:Name="InputEntry"
+                       FontFamily="InterRegular"
+                       FontSize="14"
+                       TextColor="{StaticResource OnSurface}"
+                       PlaceholderColor="{StaticResource AuthMuted}"
+                       VerticalOptions="Center"
+                       ClearButtonVisibility="WhileEditing" />
+            </Border>
+
+            <!-- Botões de Ação -->
+            <Grid ColumnDefinitions="*, *" ColumnSpacing="10" Margin="0, 4, 0, 0">
+                <!-- Cancelar -->
+                <Border Grid.Column="0"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="1"
+                        Stroke="{StaticResource AuthBorder}"
+                        BackgroundColor="{StaticResource Surface}"
+                        HeightRequest="44"
+                        SemanticProperties.Description="Cancelar">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCancelTapped" />
+                    </Border.GestureRecognizers>
+                    <Label x:Name="CancelText"
+                           Text="Cancelar"
+                           FontFamily="InterMedium"
+                           FontSize="14"
+                           TextColor="{StaticResource OnSurfaceVariant}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <!-- Salvar / OK -->
+                <Border Grid.Column="1"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="0"
+                        BackgroundColor="{StaticResource Primary}"
+                        HeightRequest="44"
+                        SemanticProperties.Description="Salvar">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnAcceptTapped" />
+                    </Border.GestureRecognizers>
+                    <Label x:Name="AcceptText"
+                           Text="Salvar"
+                           FontFamily="InterMedium"
+                           FontSize="14"
+                           TextColor="{StaticResource White}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+            </Grid>
+        </VerticalStackLayout>
+    </Border>
+</toolkit:Popup>

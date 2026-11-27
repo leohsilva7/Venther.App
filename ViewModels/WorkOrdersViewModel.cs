@@ -18,6 +18,7 @@ public partial class WorkOrdersViewModel : BaseViewModel
 {
     private const int PageSize = 20;
     private readonly IWorkOrderService _workOrderService;
+    private readonly ISyncService _syncService;
     private readonly List<WorkOrder> _allWorkOrders = new();
     private int _currentPage = 1;
     private int _totalPages = 1;
@@ -44,9 +45,16 @@ public partial class WorkOrdersViewModel : BaseViewModel
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
-    public WorkOrdersViewModel(IWorkOrderService workOrderService)
+    [ObservableProperty]
+    private bool _isOffline;
+
+    [ObservableProperty]
+    private string _offlineMessage = string.Empty;
+
+    public WorkOrdersViewModel(IWorkOrderService workOrderService, ISyncService syncService)
     {
         _workOrderService = workOrderService;
+        _syncService = syncService;
         Title = "Chamados";
         InitSegments();
     }
@@ -80,10 +88,22 @@ public partial class WorkOrdersViewModel : BaseViewModel
 
         try
         {
-            var page = await _workOrderService.GetWorkOrdersAsync(_currentPage, PageSize);
+            _ = _syncService.ProcessQueueAsync();
+
+            var result = await _workOrderService.GetWorkOrdersAsync(_currentPage, PageSize);
             _allWorkOrders.Clear();
-            _allWorkOrders.AddRange(page.Items);
-            _totalPages = Math.Max(1, page.TotalPages);
+            _allWorkOrders.AddRange(result.Data.Items);
+            _totalPages = Math.Max(1, result.Data.TotalPages);
+
+            IsOffline = result.FromCache;
+            if (result.FromCache && result.CachedAt.HasValue)
+            {
+                OfflineMessage = $"Sem conexão • dados de {result.CachedAt.Value:dd/MM HH:mm}";
+            }
+            else
+            {
+                OfflineMessage = string.Empty;
+            }
 
             UpdateCounts();
             ApplyFilter();
@@ -115,13 +135,13 @@ public partial class WorkOrdersViewModel : BaseViewModel
         {
             _isLoadingMore = true;
             var nextPage = _currentPage + 1;
-            var page = await _workOrderService.GetWorkOrdersAsync(nextPage, PageSize);
+            var result = await _workOrderService.GetWorkOrdersAsync(nextPage, PageSize);
 
-            if (page.Items.Count > 0)
+            if (result.Data.Items.Count > 0)
             {
                 _currentPage = nextPage;
-                _totalPages = Math.Max(1, page.TotalPages);
-                _allWorkOrders.AddRange(page.Items);
+                _totalPages = Math.Max(1, result.Data.TotalPages);
+                _allWorkOrders.AddRange(result.Data.Items);
                 UpdateCounts();
                 ApplyFilter();
             }

@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Venther.App.Helpers;
 
 namespace Venther.App.Services.Api;
 
@@ -22,13 +23,30 @@ public class ApiClient : IApiClient
         _httpClient.Timeout = TimeSpan.FromSeconds(15);
     }
 
-    private static string NormalizeEndpoint(string endpoint) => endpoint.TrimStart('/');
+    private static string BuildUrl(string endpoint)
+    {
+        var baseUrl = ApiConfig.BaseUrl.Trim().TrimEnd('/');
+        var cleanEndpoint = endpoint.Trim().TrimStart('/');
+
+        // Evita duplicar /api se a BaseUrl já tiver /api ou se o endpoint já começar com api/
+        if (cleanEndpoint.StartsWith("api/", StringComparison.OrdinalIgnoreCase))
+        {
+            cleanEndpoint = cleanEndpoint[4..];
+        }
+
+        if (baseUrl.EndsWith("/api", StringComparison.OrdinalIgnoreCase))
+        {
+            baseUrl = baseUrl[..^4];
+        }
+
+        return $"{baseUrl}/{ApiConfig.ApiPath.Trim('/')}/{cleanEndpoint}";
+    }
 
     public async Task<TResult?> GetAsync<TResult>(string endpoint, CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _httpClient.GetAsync(NormalizeEndpoint(endpoint), cancellationToken);
+            var response = await _httpClient.GetAsync(BuildUrl(endpoint), cancellationToken);
             await EnsureSuccessOrThrowAsync(response, cancellationToken);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
@@ -50,7 +68,7 @@ public class ApiClient : IApiClient
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(NormalizeEndpoint(endpoint), body, JsonOptions, cancellationToken);
+            var response = await _httpClient.PostAsJsonAsync(BuildUrl(endpoint), body, JsonOptions, cancellationToken);
             await EnsureSuccessOrThrowAsync(response, cancellationToken);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
@@ -72,7 +90,7 @@ public class ApiClient : IApiClient
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(NormalizeEndpoint(endpoint), body, JsonOptions, cancellationToken);
+            var response = await _httpClient.PostAsJsonAsync(BuildUrl(endpoint), body, JsonOptions, cancellationToken);
             await EnsureSuccessOrThrowAsync(response, cancellationToken);
         }
         catch (ApiException)
@@ -89,7 +107,7 @@ public class ApiClient : IApiClient
     {
         try
         {
-            var response = await _httpClient.PutAsJsonAsync(NormalizeEndpoint(endpoint), body, JsonOptions, cancellationToken);
+            var response = await _httpClient.PutAsJsonAsync(BuildUrl(endpoint), body, JsonOptions, cancellationToken);
             await EnsureSuccessOrThrowAsync(response, cancellationToken);
         }
         catch (ApiException)
@@ -106,7 +124,7 @@ public class ApiClient : IApiClient
     {
         try
         {
-            var response = await _httpClient.DeleteAsync(NormalizeEndpoint(endpoint), cancellationToken);
+            var response = await _httpClient.DeleteAsync(BuildUrl(endpoint), cancellationToken);
             await EnsureSuccessOrThrowAsync(response, cancellationToken);
         }
         catch (ApiException)

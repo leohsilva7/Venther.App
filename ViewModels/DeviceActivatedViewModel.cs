@@ -18,6 +18,7 @@ namespace Venther.App.ViewModels;
 public partial class DeviceActivatedViewModel : BaseViewModel
 {
     private readonly ITelemetryHubService _telemetryHub;
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty]
     private string _boardId = string.Empty;
@@ -43,9 +44,10 @@ public partial class DeviceActivatedViewModel : BaseViewModel
     [ObservableProperty]
     private string _activationTimestamp = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
 
-    public DeviceActivatedViewModel(ITelemetryHubService telemetryHub)
+    public DeviceActivatedViewModel(ITelemetryHubService telemetryHub, IDialogService dialogService)
     {
         _telemetryHub = telemetryHub;
+        _dialogService = dialogService;
         Title = "Dispositivo Ativado";
     }
 
@@ -89,15 +91,19 @@ public partial class DeviceActivatedViewModel : BaseViewModel
     [RelayCommand]
     private async Task MoreOptionsAsync()
     {
-        if (Application.Current?.Windows[0]?.Page != null)
+        var selected = await _dialogService.ShowActionSheetAsync(
+            "Opções do Dispositivo",
+            "Cancelar",
+            "Ver Detalhes do Dispositivo",
+            "Compartilhar Credenciais",
+            "Diagnóstico de Rede");
+
+        if (selected == "Ver Detalhes do Dispositivo" && !string.IsNullOrWhiteSpace(BoardId))
         {
-            await Application.Current.Windows[0].Page!.DisplayActionSheetAsync(
-                "Opções do Dispositivo",
-                "Cancelar",
-                null,
-                "Ver Detalhes do Dispositivo",
-                "Compartilhar Credenciais",
-                "Diagnóstico de Rede");
+            await Shell.Current.GoToAsync(Routes.DeviceDetail, new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["DeviceId"] = BoardId
+            });
         }
     }
 }

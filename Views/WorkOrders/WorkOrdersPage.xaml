@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:Venther.App.ViewModels"
              xmlns:controls="clr-namespace:Venther.App.Controls"
              xmlns:models="clr-namespace:Venther.App.Models"
@@ -11,48 +12,70 @@
 
     <Grid RowDefinitions="Auto, *">
 
-        <!-- Row 0: Header com título + botão de filtro -->
+        <!-- Row 0: Header com título + botão de filtro + SegmentedControl acoplado -->
         <controls:AppHeader Grid.Row="0"
                             Title="Chamados"
                             ShowSyncButton="True"
                             ShowBellButton="False"
                             ShowFilterButton="True"
                             SyncCommand="{Binding RefreshCommand}"
-                            FilterCommand="{Binding OpenFilterCommand}" />
+                            FilterCommand="{Binding OpenFilterCommand}">
+            <controls:AppHeader.BottomContent>
+                <controls:SegmentedControl ItemsSource="{Binding FilterSegments}"
+                                          SelectedIndex="{Binding SelectedSegmentIndex, Mode=TwoWay}"
+                                          Margin="0, 4, 0, 0" />
+            </controls:AppHeader.BottomContent>
+        </controls:AppHeader>
 
         <!-- Row 1: Lista -->
-        <RefreshView Grid.Row="1"
-                     IsRefreshing="{Binding IsRefreshing}"
-                     Command="{Binding RefreshCommand}"
-                     RefreshColor="{StaticResource Primary}">
+        <Grid Grid.Row="1" RowDefinitions="Auto, *">
+            <!-- Offline Banner -->
+            <Border Grid.Row="0"
+                    IsVisible="{Binding IsOffline}"
+                    BackgroundColor="{StaticResource SurfaceVariant}"
+                    Stroke="{StaticResource Outline}"
+                    StrokeThickness="0"
+                    Padding="16, 8">
+                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image Source="wifi.svg"
+                           WidthRequest="14"
+                           HeightRequest="14"
+                           Aspect="AspectFit"
+                           VerticalOptions="Center">
+                        <Image.Behaviors>
+                            <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurfaceVariant}" />
+                        </Image.Behaviors>
+                    </Image>
+                    <Label Text="{Binding OfflineMessage}"
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource OnSurfaceVariant}"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+
+            <RefreshView Grid.Row="1"
+                         IsRefreshing="{Binding IsRefreshing}"
+                         Command="{Binding RefreshCommand}"
+                         RefreshColor="{StaticResource Primary}">
             <CollectionView ItemsSource="{Binding FilteredWorkOrders}"
                             SelectionMode="None"
                             RemainingItemsThreshold="3"
                             RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
 
-            <!-- Header: SegmentedControl + counter -->
+            <!-- Header: Contagem de ordens -->
             <CollectionView.Header>
-                <VerticalStackLayout Spacing="0">
-
-                    <controls:SegmentedControl ItemsSource="{Binding FilterSegments}"
-                                              SelectedIndex="{Binding SelectedSegmentIndex, Mode=TwoWay}"
-                                              Margin="20, 16, 20, 0" />
-
-                    <Label Margin="20, 12, 20, 4"
-                           Style="{StaticResource BodySmall}">
-                        <Label.FormattedText>
-                            <FormattedString>
-                                <Span Text="{Binding FilteredWorkOrders.Count}"
-                                      FontFamily="InterSemiBold"
-                                      TextColor="{StaticResource OnSurface}" />
-                                <Span Text=" ordens encontradas"
-                                      TextColor="{StaticResource OnSurfaceVariant}" />
-                            </FormattedString>
-                        </Label.FormattedText>
-                    </Label>
-
-                    <BoxView HeightRequest="8" Color="Transparent" />
-                </VerticalStackLayout>
+                <Label Margin="20, 12, 20, 8"
+                       Style="{StaticResource BodySmall}">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{Binding FilteredWorkOrders.Count}"
+                                  FontFamily="InterSemiBold"
+                                  TextColor="{StaticResource OnSurface}" />
+                            <Span Text=" ordens encontradas"
+                                  TextColor="{StaticResource OnSurfaceVariant}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
             </CollectionView.Header>
 
             <!-- Items -->
@@ -115,6 +138,7 @@
 
             </CollectionView>
         </RefreshView>
+        </Grid>
 
         <!-- Loading overlay -->
         <ActivityIndicator Grid.Row="1"

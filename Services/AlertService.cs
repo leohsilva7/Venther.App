@@ -14,26 +14,48 @@ public class AlertService : IAlertService
 {
     private readonly IApiClient _apiClient;
     private readonly IDeviceService _deviceService;
+    private readonly ICacheService _cacheService;
     private Dictionary<Guid, string>? _boardLocationCache;
 
-    public AlertService(IApiClient apiClient, IDeviceService deviceService)
+    public AlertService(IApiClient apiClient, IDeviceService deviceService, ICacheService cacheService)
     {
         _apiClient = apiClient;
         _deviceService = deviceService;
+        _cacheService = cacheService;
     }
 
-    public async Task<PagedResult<AlertItem>> GetAlertsAsync(int page = 1, int pageSize = 20)
+    public async Task<CachedResult<PagedResult<AlertItem>>> GetAlertsAsync(int page = 1, int pageSize = 20)
     {
-        var result = await _apiClient.GetAsync<PagedResult<FailureDto>>($"/failures?page={page}&pageSize={pageSize}");
-        if (result == null)
+        try
         {
-            return new PagedResult<AlertItem>(Array.Empty<AlertItem>(), page, pageSize, 0, 0);
+            var result = await _apiClient.GetAsync<PagedResult<FailureDto>>($"/failures?page={page}&pageSize={pageSize}");
+            if (result == null)
+            {
+                var empty = new PagedResult<AlertItem>(Array.Empty<AlertItem>(), page, pageSize, 0, 0);
+                return CachedResult<PagedResult<AlertItem>>.Fresh(empty);
+            }
+
+            await EnsureBoardCacheAsync();
+
+            var items = result.Items.Select(MapFailure).ToList();
+            var paged = new PagedResult<AlertItem>(items, result.Page, result.PageSize, result.TotalCount, result.TotalPages);
+
+            if (page == 1)
+            {
+                await _cacheService.SaveAsync("alerts", paged);
+            }
+
+            return CachedResult<PagedResult<AlertItem>>.Fresh(paged);
         }
-
-        await EnsureBoardCacheAsync();
-
-        var items = result.Items.Select(MapFailure).ToList();
-        return new PagedResult<AlertItem>(items, result.Page, result.PageSize, result.TotalCount, result.TotalPages);
+        catch (ApiException ex) when (ex.StatusCode == 0)
+        {
+            var cached = await _cacheService.LoadAsync<PagedResult<AlertItem>>("alerts");
+            if (cached != null)
+            {
+                return CachedResult<PagedResult<AlertItem>>.FromStorage(cached.Data, cached.SavedAt);
+            }
+            throw;
+        }
     }
 
     private async Task EnsureBoardCacheAsync()
@@ -43,8 +65,8 @@ public class AlertService : IAlertService
 
         try
         {
-            var boards = await _deviceService.GetDevicesAsync(1, 100);
-            _boardLocationCache = boards.Items
+            var boardsResult = await _deviceService.GetDevicesAsync(1, 100);
+            _boardLocationCache = boardsResult.Data.Items
                 .Where(b => Guid.TryParse(b.Id, out _))
                 .ToDictionary(b => Guid.Parse(b.Id), b => b.Name);
         }

@@ -42,6 +42,8 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
     private readonly IDeviceService _deviceService;
     private readonly IClientService _clientService;
     private readonly ITelemetryHubService _telemetryHub;
+    private readonly ISyncService _syncService;
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty]
     private string _workOrderId = string.Empty;
@@ -51,6 +53,15 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
 
     [ObservableProperty]
     private WorkOrder? _workOrder;
+
+    [ObservableProperty]
+    private bool _isOffline;
+
+    [ObservableProperty]
+    private string _offlineMessage = string.Empty;
+
+    [ObservableProperty]
+    private bool _isPendingSync;
 
     // SLA / Status banner
     [ObservableProperty]
@@ -102,12 +113,16 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
         IWorkOrderService workOrderService,
         IDeviceService deviceService,
         IClientService clientService,
-        ITelemetryHubService telemetryHub)
+        ITelemetryHubService telemetryHub,
+        ISyncService syncService,
+        IDialogService dialogService)
     {
         _workOrderService = workOrderService;
         _deviceService = deviceService;
         _clientService = clientService;
         _telemetryHub = telemetryHub;
+        _syncService = syncService;
+        _dialogService = dialogService;
         Title = "Detalhes da O.S.";
         InitChecklist();
     }
@@ -175,7 +190,7 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
             IsBusy = true;
 
             var orderTask = _workOrderService.GetWorkOrderByIdAsync(id);
-            Task<Models.Device?>? boardTask = PassedWorkOrder != null && PassedWorkOrder.BoardId != Guid.Empty
+            Task<CachedResult<Models.Device?>>? boardTask = PassedWorkOrder != null && PassedWorkOrder.BoardId != Guid.Empty
                 ? _deviceService.GetDeviceByIdAsync(PassedWorkOrder.BoardId.ToString())
                 : null;
 
@@ -188,7 +203,8 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
                 await orderTask;
             }
 
-            var order = orderTask.Result ?? PassedWorkOrder;
+            var orderResult = orderTask.Result;
+            var order = orderResult?.Data ?? PassedWorkOrder;
             if (order != null)
             {
                 WorkOrder = order;
@@ -196,10 +212,28 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
                 UpdateBannerFromOrder(order);
             }
 
-            var board = boardTask?.Result;
+            IsPendingSync = await _syncService.IsWorkOrderPendingSyncAsync(id);
+            if (IsPendingSync)
+            {
+                SlaStatusText = "CONCLUÍDA • PENDENTE DE ENVIO";
+            }
+
+            if (orderResult != null && orderResult.FromCache && orderResult.CachedAt.HasValue)
+            {
+                IsOffline = true;
+                OfflineMessage = $"Sem conexão • dados de {orderResult.CachedAt.Value:dd/MM HH:mm}";
+            }
+            else
+            {
+                IsOffline = false;
+                OfflineMessage = string.Empty;
+            }
+
+            var board = boardTask?.Result?.Data;
             if (board == null && order != null && order.BoardId != Guid.Empty)
             {
-                board = await _deviceService.GetDeviceByIdAsync(order.BoardId.ToString());
+                var br = await _deviceService.GetDeviceByIdAsync(order.BoardId.ToString());
+                board = br.Data;
             }
 
             if (board != null)
@@ -221,7 +255,8 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
                 {
                     try
                     {
-                        var customer = await _clientService.GetCustomerByIdAsync(board.CustomerId);
+                        var customerResult = await _clientService.GetCustomerByIdAsync(board.CustomerId);
+                        var customer = customerResult.Data;
                         if (customer != null)
                         {
                             ClientName = customer.Name;
@@ -247,7 +282,7 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
     {
         if (string.IsNullOrWhiteSpace(ContactPhone))
         {
-            await ShowAlertAsync("Telefone indisponível", "Não há telefone cadastrado para este cliente.");
+            await _dialogService.ShowAlertAsync("Telefone indisponível", "Não há telefone cadastrado para este cliente.", "OK", DialogType.Warning);
             return;
         }
 
@@ -258,7 +293,7 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
         }
         catch
         {
-            await ShowAlertAsync("Erro", "Não foi possível abrir o discador.");
+            await _dialogService.ShowAlertAsync("Erro", "Não foi possível abrir o discador.", "OK", DialogType.Error);
         }
     }
 
@@ -267,7 +302,7 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
     {
         if (string.IsNullOrWhiteSpace(ContactPhone))
         {
-            await ShowAlertAsync("Telefone indisponível", "Não há telefone cadastrado para este cliente.");
+            await _dialogService.ShowAlertAsync("Telefone indisponível", "Não há telefone cadastrado para este cliente.", "OK", DialogType.Warning);
             return;
         }
 
@@ -278,7 +313,7 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
         }
         catch
         {
-            await ShowAlertAsync("Erro", "Não foi possível abrir o aplicativo de mensagens.");
+            await _dialogService.ShowAlertAsync("Erro", "Não foi possível abrir o aplicativo de mensagens.", "OK", DialogType.Error);
         }
     }
 
@@ -287,12 +322,13 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
     {
         if (IsBusy || WorkOrder == null) return;
 
-        var page = Application.Current?.Windows.Count > 0 ? Application.Current.Windows[0].Page : null;
-        if (page != null)
-        {
-            bool confirm = await page.DisplayAlertAsync("Concluir Chamado", "Deseja realmente marcar esta ordem de serviço como concluída?", "Sim, Concluir", "Cancelar");
-            if (!confirm) return;
-        }
+        bool confirm = await _dialogService.ShowConfirmationAsync(
+            "Concluir Chamado",
+            "Deseja realmente marcar esta ordem de serviço como concluída?",
+            "Sim, Concluir",
+            "Cancelar");
+
+        if (!confirm) return;
 
         try
         {
@@ -303,13 +339,23 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
 
             await Shell.Current.GoToAsync("..");
         }
+        catch (ApiException ex) when (ex.StatusCode == 0)
+        {
+            WorkOrder.IsDone = true;
+            WorkOrder.Status = WorkOrderStatus.Done;
+            IsPendingSync = true;
+            SlaStatusText = "CONCLUÍDA • PENDENTE DE ENVIO";
+
+            await _dialogService.ShowAlertAsync("Sem conexão", "Sem conexão: o checkout será enviado quando a internet voltar.", "Entendi", DialogType.Warning);
+            await Shell.Current.GoToAsync("..");
+        }
         catch (ApiException ex)
         {
-            await ShowAlertAsync("Erro ao concluir", ex.Message);
+            await _dialogService.ShowAlertAsync("Erro ao concluir", ex.Message, "OK", DialogType.Error);
         }
         catch (Exception)
         {
-            await ShowAlertAsync("Erro ao concluir", "Não foi possível concluir a ordem de serviço.");
+            await _dialogService.ShowAlertAsync("Erro ao concluir", "Não foi possível concluir a ordem de serviço.", "OK", DialogType.Error);
         }
         finally
         {
@@ -321,14 +367,5 @@ public partial class WorkOrderDetailViewModel : BaseViewModel
     private async Task BackAsync()
     {
         await Shell.Current.GoToAsync("..");
-    }
-
-    private static async Task ShowAlertAsync(string title, string message)
-    {
-        var page = Application.Current?.Windows.Count > 0 ? Application.Current.Windows[0].Page : null;
-        if (page != null)
-        {
-            await page.DisplayAlertAsync(title, message, "OK");
-        }
     }
 }

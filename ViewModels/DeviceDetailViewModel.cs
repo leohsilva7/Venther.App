@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,18 +19,22 @@ public record MetricViewData(string Value, string Unit, string Caption, bool IsA
     public static MetricViewData Empty => new("--", "", "Sem leitura", false);
 }
 
+public record HistoryLogItem(string Timestamp, string Supply, string Return, string GasLine, string DeltaP);
+
 [QueryProperty(nameof(DeviceId), "DeviceId")]
 public partial class DeviceDetailViewModel : BaseViewModel
 {
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     private readonly IDeviceService _deviceService;
     private readonly ITelemetryHubService _telemetryHub;
+    private readonly IDialogService _dialogService;
     private Guid _boardGuid;
 
-    public DeviceDetailViewModel(IDeviceService deviceService, ITelemetryHubService telemetryHub)
+    public DeviceDetailViewModel(IDeviceService deviceService, ITelemetryHubService telemetryHub, IDialogService dialogService)
     {
         _deviceService = deviceService;
         _telemetryHub = telemetryHub;
+        _dialogService = dialogService;
         Title = "Detalhes do Equipamento";
         _telemetryHub.TelemetryUpdated += OnTelemetryUpdated;
     }
@@ -48,6 +53,26 @@ public partial class DeviceDetailViewModel : BaseViewModel
     [ObservableProperty] private bool hasAlert;
     [ObservableProperty] private string nowLabel = "Sem leitura";
     [ObservableProperty] private string historyStatusText = string.Empty;
+
+    // History tab
+    private static readonly CultureInfo PtBr = new("pt-BR");
+    private DateTime _selectedMonth = new(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private List<HistoryLogItem> _allHistoryLogs = new();
+    private bool _historyLoaded;
+
+    [ObservableProperty] private string selectedMonthLabel = string.Empty;
+    [ObservableProperty] private bool canGoNextMonth;
+    [ObservableProperty] private bool isHistoryLoading;
+    [ObservableProperty] private bool hasHistoryError;
+    [ObservableProperty] private string historyErrorMessage = string.Empty;
+    [ObservableProperty] private bool isHistoryEmpty;
+    [ObservableProperty] private string historyEmptyMessage = "Sem leituras neste mês";
+    [ObservableProperty] private bool hasHistoryData;
+    [ObservableProperty] private string supplySummary = "--";
+    [ObservableProperty] private string returnSummary = "--";
+    [ObservableProperty] private string totalReadingsCount = "0";
+    [ObservableProperty] private bool hasMoreHistoryLogs;
+    public ObservableCollection<HistoryLogItem> VisibleHistoryLogs { get; } = new();
 
     public bool IsHistoryTab => !IsRealtimeTab;
     public bool IsPeriod1h => SelectedPeriod == TrendPeriod.OneHour;
@@ -229,7 +254,124 @@ public partial class DeviceDetailViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private void SelectTab(string tab) => IsRealtimeTab = tab == "realtime";
+    private async Task SelectTabAsync(string tab)
+    {
+        IsRealtimeTab = tab == "realtime";
+        if (IsHistoryTab && !_historyLoaded)
+        {
+            UpdateMonthHeader();
+            await LoadHistoryAsync();
+        }
+    }
+
+    private void UpdateMonthHeader()
+    {
+        var raw = _selectedMonth.ToString("MMMM yyyy", PtBr);
+        SelectedMonthLabel = char.ToUpper(raw[0], PtBr) + raw[1..];
+        var currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        CanGoNextMonth = _selectedMonth < currentMonth;
+    }
+
+    [RelayCommand]
+    private async Task PreviousMonthAsync()
+    {
+        _selectedMonth = _selectedMonth.AddMonths(-1);
+        UpdateMonthHeader();
+        await LoadHistoryAsync();
+    }
+
+    [RelayCommand]
+    private async Task NextMonthAsync()
+    {
+        if (!CanGoNextMonth) return;
+        _selectedMonth = _selectedMonth.AddMonths(1);
+        UpdateMonthHeader();
+        await LoadHistoryAsync();
+    }
+
+    [RelayCommand]
+    private async Task LoadHistoryAsync()
+    {
+        if (IsHistoryLoading || _boardGuid == Guid.Empty) return;
+
+        IsHistoryLoading = true;
+        HasHistoryError = false;
+        HistoryErrorMessage = string.Empty;
+        IsHistoryEmpty = false;
+        HasHistoryData = false;
+        HistoryEmptyMessage = "Sem leituras neste mês";
+        VisibleHistoryLogs.Clear();
+        HasMoreHistoryLogs = false;
+
+        try
+        {
+            var logs = await _deviceService.GetBoardLogsAsync(_boardGuid, _selectedMonth.ToString("yyyy-MM"));
+            _historyLoaded = true;
+
+            if (logs.Count == 0)
+            {
+                IsHistoryEmpty = true;
+                return;
+            }
+
+            var ordered = logs.OrderByDescending(l => l.CreatedAt ?? DateTime.MinValue).ToList();
+
+            var sMin = ordered.Min(l => l.SupplyAirTemperature).ToString("0.0", Inv);
+            var sAvg = ordered.Average(l => l.SupplyAirTemperature).ToString("0.0", Inv);
+            var sMax = ordered.Max(l => l.SupplyAirTemperature).ToString("0.0", Inv);
+            SupplySummary = $"{sMin}° / {sAvg}° / {sMax}°C";
+
+            var rMin = ordered.Min(l => l.ReturnAirTemperature).ToString("0.0", Inv);
+            var rAvg = ordered.Average(l => l.ReturnAirTemperature).ToString("0.0", Inv);
+            var rMax = ordered.Max(l => l.ReturnAirTemperature).ToString("0.0", Inv);
+            ReturnSummary = $"{rMin}° / {rAvg}° / {rMax}°C";
+
+            TotalReadingsCount = ordered.Count.ToString(Inv);
+
+            _allHistoryLogs = ordered.Select(l => new HistoryLogItem(
+                Timestamp: l.CreatedAt.HasValue ? l.CreatedAt.Value.ToLocalTime().ToString("dd/MM HH:mm", PtBr) : "--",
+                Supply: $"{l.SupplyAirTemperature.ToString("0.0", Inv)}°C",
+                Return: $"{l.ReturnAirTemperature.ToString("0.0", Inv)}°C",
+                GasLine: $"{l.GasLineTemperature.ToString("0.0", Inv)}°C",
+                DeltaP: $"{l.EvaporatorCoilPressureDrop.ToString("0", Inv)} Pa"
+            )).ToList();
+
+            foreach (var item in _allHistoryLogs.Take(30))
+                VisibleHistoryLogs.Add(item);
+
+            HasMoreHistoryLogs = _allHistoryLogs.Count > VisibleHistoryLogs.Count;
+            HasHistoryData = true;
+        }
+        catch (ApiException ex) when (ex.StatusCode is 401 or 403 or 404)
+        {
+            IsHistoryEmpty = true;
+            HistoryEmptyMessage = "Histórico indisponível para este perfil";
+        }
+        catch (ApiException ex)
+        {
+            HasHistoryError = true;
+            HistoryErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            HasHistoryError = true;
+            HistoryErrorMessage = "Não foi possível carregar o histórico.";
+        }
+        finally
+        {
+            IsHistoryLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private void ShowMoreHistory()
+    {
+        var next = _allHistoryLogs.Skip(VisibleHistoryLogs.Count).Take(30);
+        foreach (var item in next)
+            VisibleHistoryLogs.Add(item);
+
+        HasMoreHistoryLogs = _allHistoryLogs.Count > VisibleHistoryLogs.Count;
+    }
 
     [RelayCommand]
     private async Task SelectPeriodAsync(string period)
@@ -248,9 +390,9 @@ public partial class DeviceDetailViewModel : BaseViewModel
 
     [RelayCommand]
     private Task RequestMaintenanceAsync() =>
-        Shell.Current.DisplayAlertAsync("Manutenção Preventiva", "Em breve.", "OK");
+        _dialogService.ShowAlertAsync("Manutenção Preventiva", "Funcionalidade de solicitação de manutenção preventiva em breve.", "Entendi", DialogType.Info);
 
     [RelayCommand]
     private Task DownloadReportAsync() =>
-        Shell.Current.DisplayAlertAsync("Relatório PMOC", "Em breve.", "OK");
+        _dialogService.ShowAlertAsync("Relatório PMOC", "O download do relatório PMOC estará disponível em breve.", "Entendi", DialogType.Info);
 }

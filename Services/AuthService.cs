@@ -11,15 +11,24 @@ public class AuthService : IAuthService
     private readonly IApiClient _apiClient;
     private readonly ISessionService _sessionService;
     private readonly ITelemetryHubService _telemetryHub;
+    private readonly ICacheService _cacheService;
+    private readonly ISyncService _syncService;
 
     public bool IsAuthenticated => _sessionService.IsAuthenticated;
     public UserDto? CurrentUser => _sessionService.CurrentUser;
 
-    public AuthService(IApiClient apiClient, ISessionService sessionService, ITelemetryHubService telemetryHub)
+    public AuthService(
+        IApiClient apiClient,
+        ISessionService sessionService,
+        ITelemetryHubService telemetryHub,
+        ICacheService cacheService,
+        ISyncService syncService)
     {
         _apiClient = apiClient;
         _sessionService = sessionService;
         _telemetryHub = telemetryHub;
+        _cacheService = cacheService;
+        _syncService = syncService;
     }
 
     public async Task<LoginResponseDto> LoginAsync(string email, string password)
@@ -50,6 +59,8 @@ public class AuthService : IAuthService
         finally
         {
             await _telemetryHub.DisconnectAsync();
+            await _cacheService.ClearAllAsync();
+            await _syncService.ClearQueueAsync();
             await _sessionService.ClearAsync();
         }
     }

@@ -19,7 +19,8 @@
 
                 <!-- Logo & Branding Header -->
                 <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
-                    <Border WidthRequest="64"
+                    <Border x:Name="LogoBorder"
+                            WidthRequest="64"
                             HeightRequest="64"
                             StrokeShape="RoundRectangle 16"
                             StrokeThickness="0"

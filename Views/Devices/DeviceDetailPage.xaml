@@ -3,36 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:controls="clr-namespace:Venther.App.Controls"
+             xmlns:vm="clr-namespace:Venther.App.ViewModels"
              x:Class="Venther.App.Views.Devices.DeviceDetailPage"
+             Shell.NavBarIsVisible="False"
              Title="Detalhes do Equipamento">
 
-    <Grid RowDefinitions="64,*">
+    <Grid RowDefinitions="Auto, *">
 
-        <!-- ===== Header: voltar + título + avatar ===== -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8"
-              Padding="24,0" BackgroundColor="{StaticResource Background}">
-            <ImageButton Source="arrow_left.svg" WidthRequest="44" HeightRequest="44"
-                         Padding="14" BackgroundColor="Transparent"
-                         Command="{Binding BackCommand}"
-                         SemanticProperties.Description="Voltar">
-                <ImageButton.Behaviors>
-                    <toolkit:IconTintColorBehavior TintColor="{StaticResource OnSurface}" />
-                </ImageButton.Behaviors>
-            </ImageButton>
-            <Label Grid.Column="1" Text="{Binding Title}" Style="{StaticResource Heading}"
-                   VerticalOptions="Center" LineBreakMode="TailTruncation" />
-            <Border Grid.Column="2" WidthRequest="32" HeightRequest="32" StrokeThickness="0"
-                    BackgroundColor="{StaticResource Primary}" VerticalOptions="Center">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="12" />
-                </Border.StrokeShape>
-                <Image Source="user.svg" WidthRequest="12" HeightRequest="12">
-                    <Image.Behaviors>
-                        <toolkit:IconTintColorBehavior TintColor="White" />
-                    </Image.Behaviors>
-                </Image>
-            </Border>
-        </Grid>
+        <!-- ===== AppHeader Padronizado: voltar + título + perfil ===== -->
+        <controls:AppHeader Grid.Row="0"
+                            Title="{Binding Title}"
+                            ShowBackButton="True"
+                            BackCommand="{Binding BackCommand}"
+                            ShowBellButton="False" />
 
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="24,0,24,40" Spacing="24">
@@ -294,11 +277,115 @@
                     </Border>
                 </VerticalStackLayout>
 
-                <!-- ===== Aba: Histórico (placeholder) ===== -->
-                <Border Style="{StaticResource Card}" IsVisible="{Binding IsHistoryTab}">
-                    <Label Text="O histórico de leituras estará disponível em breve."
-                           Style="{StaticResource BodySmall}" HorizontalTextAlignment="Center" />
-                </Border>
+                <!-- ===== Aba: Histórico ===== -->
+                <VerticalStackLayout Spacing="16" IsVisible="{Binding IsHistoryTab}">
+
+                    <!-- Seletor de mês -->
+                    <Border Style="{StaticResource Card}" Padding="16,12">
+                        <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+                            <ImageButton Grid.Column="0" Source="arrow_left.svg" WidthRequest="36" HeightRequest="36"
+                                         Padding="8" BackgroundColor="Transparent"
+                                         Command="{Binding PreviousMonthCommand}"
+                                         SemanticProperties.Description="Mês anterior">
+                                <ImageButton.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                                </ImageButton.Behaviors>
+                            </ImageButton>
+
+                            <Label Grid.Column="1" Text="{Binding SelectedMonthLabel}"
+                                   Style="{StaticResource Heading}" FontSize="16"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+
+                            <ImageButton Grid.Column="2" Source="arrow_right.svg" WidthRequest="36" HeightRequest="36"
+                                         Padding="8" BackgroundColor="Transparent"
+                                         IsEnabled="{Binding CanGoNextMonth}"
+                                         Command="{Binding NextMonthCommand}"
+                                         SemanticProperties.Description="Próximo mês">
+                                <ImageButton.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource Primary}" />
+                                </ImageButton.Behaviors>
+                            </ImageButton>
+                        </Grid>
+                    </Border>
+
+                    <!-- Carregando -->
+                    <ActivityIndicator IsRunning="{Binding IsHistoryLoading}"
+                                       IsVisible="{Binding IsHistoryLoading}"
+                                       Color="{StaticResource Primary}"
+                                       HorizontalOptions="Center" />
+
+                    <!-- Erro -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding HasHistoryError}" Padding="20">
+                        <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                            <Label Text="{Binding HistoryErrorMessage}" Style="{StaticResource BodySmall}"
+                                   TextColor="{StaticResource Error}" HorizontalTextAlignment="Center" />
+                            <Button Text="Tentar novamente" Command="{Binding LoadHistoryCommand}"
+                                    BackgroundColor="{StaticResource Primary}" TextColor="{StaticResource White}"
+                                    CornerRadius="8" HeightRequest="44" Padding="20,0" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Vazio -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsHistoryEmpty}" Padding="24">
+                        <Label Text="{Binding HistoryEmptyMessage}" Style="{StaticResource BodySmall}"
+                               HorizontalTextAlignment="Center" />
+                    </Border>
+
+                    <!-- Resumo + Lista -->
+                    <VerticalStackLayout Spacing="16" IsVisible="{Binding HasHistoryData}">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <Border Grid.Column="0" Style="{StaticResource Card}" Padding="14">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="INSUFLAMENTO (MÍN/MÉD/MÁX)" Style="{StaticResource Overline}" />
+                                    <Label Text="{Binding SupplySummary}" FontFamily="InterSemiBold" FontSize="13"
+                                           TextColor="{StaticResource OnSurface}" />
+                                </VerticalStackLayout>
+                            </Border>
+                            <Border Grid.Column="1" Style="{StaticResource Card}" Padding="14">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="RETORNO (MÍN/MÉD/MÁX)" Style="{StaticResource Overline}" />
+                                    <Label Text="{Binding ReturnSummary}" FontFamily="InterSemiBold" FontSize="13"
+                                           TextColor="{StaticResource OnSurface}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+
+                        <Border Style="{StaticResource Card}" Padding="14">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="Total de leituras no mês" Style="{StaticResource BodySmall}" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="{Binding TotalReadingsCount}" FontFamily="InterBold"
+                                       FontSize="16" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+
+                        <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding VisibleHistoryLogs}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:HistoryLogItem">
+                                    <Border Style="{StaticResource Card}" Padding="14,12">
+                                        <Grid ColumnDefinitions="Auto,*,*,*,*" ColumnSpacing="8">
+                                            <Label Grid.Column="0" Text="{Binding Timestamp}" Style="{StaticResource Caption}"
+                                                   TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                                            <Label Grid.Column="1" Text="{Binding Supply}" Style="{StaticResource Caption}"
+                                                   TextColor="{StaticResource Primary}" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                            <Label Grid.Column="2" Text="{Binding Return}" Style="{StaticResource Caption}"
+                                                   HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                            <Label Grid.Column="3" Text="{Binding GasLine}" Style="{StaticResource Caption}"
+                                                   HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                            <Label Grid.Column="4" Text="{Binding DeltaP}" Style="{StaticResource Caption}"
+                                                   TextColor="{StaticResource OnSurfaceVariant}" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                        <Button Text="Ver mais" IsVisible="{Binding HasMoreHistoryLogs}"
+                                Command="{Binding ShowMoreHistoryCommand}"
+                                BackgroundColor="{StaticResource Surface}" TextColor="{StaticResource Primary}"
+                                BorderColor="{StaticResource AuthBorder}" BorderWidth="1"
+                                CornerRadius="8" HeightRequest="44" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
 
             </VerticalStackLayout>
         </ScrollView>

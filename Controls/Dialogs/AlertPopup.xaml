@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               x:Class="Venther.App.Controls.Dialogs.AlertPopup"
+               Color="Transparent"
+               CanBeDismissedByTappingOutsideOfPopup="True">
+
+    <Border WidthRequest="320"
+            StrokeShape="RoundRectangle 20"
+            StrokeThickness="1"
+            Stroke="{StaticResource AuthBorder}"
+            BackgroundColor="{StaticResource White}"
+            Padding="24"
+            Margin="20"
+            HorizontalOptions="Center"
+            VerticalOptions="Center">
+        <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.15" Offset="0, 8" Radius="16" />
+        </Border.Shadow>
+
+        <VerticalStackLayout Spacing="16">
+            <!-- Ícone Contextual -->
+            <Border x:Name="IconBadge"
+                    WidthRequest="48"
+                    HeightRequest="48"
+                    StrokeShape="RoundRectangle 24"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource SurfaceVariant}"
+                    HorizontalOptions="Center">
+                <Image x:Name="IconImage"
+                       Source="alert_circle.svg"
+                       WidthRequest="22"
+                       HeightRequest="22"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
+                    <Image.Behaviors>
+                        <toolkit:IconTintColorBehavior x:Name="IconTint" TintColor="{StaticResource Primary}" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
+
+            <!-- Título e Mensagem -->
+            <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                <Label x:Name="TitleLabel"
+                       Text="Aviso"
+                       FontFamily="InterSemiBold"
+                       FontSize="18"
+                       TextColor="{StaticResource OnSurface}"
+                       HorizontalTextAlignment="Center"
+                       HorizontalOptions="Center" />
+
+                <Label x:Name="MessageLabel"
+                       Text="Mensagem do alerta"
+                       Style="{StaticResource BodySmall}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       HorizontalTextAlignment="Center"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <!-- Botão de Fechar / OK -->
+            <Border StrokeShape="RoundRectangle 12"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource Primary}"
+                    HeightRequest="44"
+                    Margin="0, 4, 0, 0"
+                    SemanticProperties.Description="Confirmar aviso">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnConfirmTapped" />
+                </Border.GestureRecognizers>
+                <Label x:Name="ButtonLabel"
+                       Text="OK"
+                       FontFamily="InterMedium"
+                       FontSize="14"
+                       TextColor="{StaticResource White}"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+            </Border>
+        </VerticalStackLayout>
+    </Border>
+</toolkit:Popup>
